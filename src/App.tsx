@@ -47,6 +47,8 @@ const progressData = [
   { name: 'Sun', score: 72 },
 ];
 
+const APP_NAME = 'compitative-exams-B.Sc.';
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
@@ -132,13 +134,15 @@ export default function App() {
               <GraduationCap size={24} />
             </div>
             {(isSidebarOpen || isDesktop) && (
+              <motion.div 
               <motion.span 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: isSidebarOpen ? 1 : 0 }}
-                className="font-bold text-xl tracking-tight text-slate-800 whitespace-nowrap"
+                className="min-w-0"
               >
-                StudyOS
-              </motion.span>
+                <p className="font-bold text-sm tracking-tight text-slate-800 truncate">{APP_NAME}</p>
+                <p className="text-xs text-slate-500 truncate">Chemistry Prep</p>
+              </motion.div>
             )}
           </div>
           {!isDesktop && isSidebarOpen && (
@@ -213,8 +217,8 @@ export default function App() {
           </div>
           <div className="flex items-center gap-3 ml-4">
             <div className="hidden sm:flex flex-col items-end">
-              <span className="text-xs font-semibold text-slate-700">Chemistry Prep</span>
-              <span className="text-[10px] text-slate-500">GATE / JAM</span>
+              <span className="text-xs font-semibold text-slate-700">{APP_NAME}</span>
+              <span className="text-[10px] text-slate-500">Chemistry Prep</span>
             </div>
             <div className="w-8 h-8 rounded-full bg-slate-200 border border-white shadow-sm overflow-hidden shrink-0">
               <img src="https://picsum.photos/seed/student/100/100" alt="Avatar" referrerPolicy="no-referrer" />
