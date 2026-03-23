@@ -25,7 +25,11 @@ import {
   Beaker,
   Pickaxe,
   Wind,
-  Droplets
+  Droplets,
+  Atom,
+  Zap,
+  Activity,
+  Timer
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -67,8 +71,105 @@ const JamMasterSim = () => {
     }
   };
 
+  const isOptimalPh = ph >= 8 && ph <= 10;
+  const isAcidic = ph < 8;
+  const isTooBasic = ph > 10;
+  const hasCollector = reagent === 'Potassium Ethyl Xanthate';
+
   return (
     <div className="w-full max-w-lg bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-700 space-y-6">
+      
+      {/* Visual Feedback Area */}
+      <div className="relative h-56 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden flex items-center justify-around p-4 shadow-inner">
+        <div className="absolute top-3 left-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          Microscopic View
+        </div>
+        
+        {/* PbS Particle (Galena) */}
+        <div className="relative flex flex-col items-center justify-center pt-4">
+          <div className="w-16 h-16 bg-slate-700 rounded-lg border-2 border-slate-500 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center z-10 relative">
+            <span className="font-bold text-slate-200">PbS</span>
+            
+            {/* Collector molecules attaching to PbS */}
+            {hasCollector && !isTooBasic && (
+              <motion.div 
+                className="absolute inset-[-12px] border-4 border-emerald-500/40 rounded-xl border-dashed"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              />
+            )}
+            {hasCollector && isTooBasic && (
+              <div className="absolute -top-8 text-[10px] text-rose-400 whitespace-nowrap font-bold bg-slate-900/80 px-2 py-1 rounded">OH⁻ Repulsion</div>
+            )}
+            {hasCollector && !isTooBasic && (
+              <div className="absolute -top-8 text-[10px] text-emerald-400 whitespace-nowrap font-bold bg-slate-900/80 px-2 py-1 rounded">Collector Attached</div>
+            )}
+          </div>
+          <span className="mt-4 text-[10px] text-slate-400 font-mono">Galena (Target)</span>
+        </div>
+
+        {/* ZnS Particle (Sphalerite) */}
+        <div className="relative flex flex-col items-center justify-center pt-4">
+          <div className="w-16 h-16 bg-amber-900/80 rounded-full border-2 border-amber-700 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center z-10 relative">
+            <span className="font-bold text-amber-200">ZnS</span>
+            
+            {/* NaCN Shield at optimal pH */}
+            {isOptimalPh && (
+              <motion.div 
+                className="absolute inset-[-8px] border-2 border-cyan-400/80 rounded-full border-dashed"
+                animate={{ rotate: -360 }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              />
+            )}
+
+            {/* Collector molecules behavior on ZnS */}
+            {hasCollector && (
+              <>
+                {isAcidic ? (
+                  // Attraction (Shield failed)
+                  <>
+                    <motion.div 
+                      className="absolute inset-[-12px] border-4 border-emerald-500/40 rounded-full border-dashed"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                    />
+                    <div className="absolute -top-8 text-[10px] text-rose-400 whitespace-nowrap font-bold bg-slate-900/80 px-2 py-1 rounded">Shield Failed (HCN↑)</div>
+                  </>
+                ) : isOptimalPh ? (
+                  // Repulsion (Shield active)
+                  <>
+                    <div className="absolute -top-8 text-[10px] text-cyan-400 whitespace-nowrap font-bold bg-slate-900/80 px-2 py-1 rounded">NaCN Shield Active</div>
+                    <motion.div 
+                      className="absolute -right-8 top-1/2 w-4 h-1.5 bg-emerald-500/50 rounded-full" 
+                      animate={{ x: [0, 15, 0], opacity: [0.8, 0, 0.8] }} 
+                      transition={{ duration: 1.5, repeat: Infinity }} 
+                    />
+                    <motion.div 
+                      className="absolute -left-8 top-1/2 w-4 h-1.5 bg-emerald-500/50 rounded-full" 
+                      animate={{ x: [0, -15, 0], opacity: [0.8, 0, 0.8] }} 
+                      transition={{ duration: 1.5, repeat: Infinity, delay: 0.75 }} 
+                    />
+                  </>
+                ) : (
+                  // Repulsion (High pH)
+                  <>
+                    <div className="absolute -top-8 text-[10px] text-rose-400 whitespace-nowrap font-bold bg-slate-900/80 px-2 py-1 rounded">OH⁻ Repulsion</div>
+                  </>
+                )}
+              </>
+            )}
+            {!hasCollector && isOptimalPh && (
+              <div className="absolute -top-8 text-[10px] text-cyan-400 whitespace-nowrap font-bold bg-slate-900/80 px-2 py-1 rounded">NaCN Shield Active</div>
+            )}
+            {!hasCollector && isAcidic && (
+              <div className="absolute -top-8 text-[10px] text-rose-400 whitespace-nowrap font-bold bg-slate-900/80 px-2 py-1 rounded">Shield Failed (HCN↑)</div>
+            )}
+          </div>
+          <span className="mt-4 text-[10px] text-slate-400 font-mono">Sphalerite (Impurity)</span>
+        </div>
+      </div>
+
       <div className="space-y-3">
         <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">1. Select Reagent</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -198,6 +299,58 @@ const SulfideSkyHighSim = () => {
     </div>
   );
 };
+
+const OrbitalArchitectSim = () => (
+  <div className="w-full max-w-lg bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center space-y-4">
+    <div className="w-16 h-16 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
+      <Atom size={32} />
+    </div>
+    <h3 className="text-xl font-bold text-slate-200">Orbital Architect Simulation</h3>
+    <p className="text-slate-400">Construct molecular orbitals to bypass the security gate.</p>
+    <div className="p-4 bg-slate-900 rounded-xl border border-slate-700 text-sm text-slate-500 font-mono">
+      [Simulation Module Loading...]
+    </div>
+  </div>
+);
+
+const QuantumBreachSim = () => (
+  <div className="w-full max-w-lg bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center space-y-4">
+    <div className="w-16 h-16 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto mb-4">
+      <Zap size={32} />
+    </div>
+    <h3 className="text-xl font-bold text-slate-200">Quantum Breach Simulation</h3>
+    <p className="text-slate-400">Hack the AI core with rapid-fire orbital matching.</p>
+    <div className="p-4 bg-slate-900 rounded-xl border border-slate-700 text-sm text-slate-500 font-mono">
+      [Simulation Module Loading...]
+    </div>
+  </div>
+);
+
+const KineticsCommanderSim = () => (
+  <div className="w-full max-w-lg bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center space-y-4">
+    <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
+      <Activity size={32} />
+    </div>
+    <h3 className="text-xl font-bold text-slate-200">Kinetics Commander Simulation</h3>
+    <p className="text-slate-400">Design the optimal reaction pathway to synthesize the cure.</p>
+    <div className="p-4 bg-slate-900 rounded-xl border border-slate-700 text-sm text-slate-500 font-mono">
+      [Simulation Module Loading...]
+    </div>
+  </div>
+);
+
+const ReactionRushSim = () => (
+  <div className="w-full max-w-lg bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center space-y-4">
+    <div className="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4">
+      <Timer size={32} />
+    </div>
+    <h3 className="text-xl font-bold text-slate-200">Reaction Rush Simulation</h3>
+    <p className="text-slate-400">Manage volatile conditions to maximize yield before time runs out.</p>
+    <div className="p-4 bg-slate-900 rounded-xl border border-slate-700 text-sm text-slate-500 font-mono">
+      [Simulation Module Loading...]
+    </div>
+  </div>
+);
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
@@ -1323,7 +1476,12 @@ export default function App() {
                               <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
                               
                               <div className="relative z-10 w-full flex justify-center">
-                                {selectedLoreMode === 'learner' ? <JamMasterSim /> : <SulfideSkyHighSim />}
+                                {mode.id === 'jam-master-sim' && <JamMasterSim />}
+                                {mode.id === 'sulfide-sky-high' && <SulfideSkyHighSim />}
+                                {mode.id === 'orbital-architect' && <OrbitalArchitectSim />}
+                                {mode.id === 'quantum-breach' && <QuantumBreachSim />}
+                                {mode.id === 'kinetics-commander' && <KineticsCommanderSim />}
+                                {mode.id === 'reaction-rush' && <ReactionRushSim />}
                               </div>
                             </div>
                           </div>
