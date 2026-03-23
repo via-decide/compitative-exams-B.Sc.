@@ -204,6 +204,9 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedType, setSelectedType] = useState('All');
+  const [youtubeLink, setYoutubeLink] = useState('');
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [selectedLoreId, setSelectedLoreId] = useState<string | null>(null);
   const [selectedLoreMode, setSelectedLoreMode] = useState<'learner' | 'gamer' | null>(null);
@@ -261,10 +264,14 @@ export default function App() {
     }
   };
 
-  const filteredResources = CHEMISTRY_RESOURCES.filter(r => 
-    r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredResources = CHEMISTRY_RESOURCES.filter(r => {
+    const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          r.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          r.type.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || r.category === selectedCategory;
+    const matchesType = selectedType === 'All' || r.type === selectedType;
+    return matchesSearch && matchesCategory && matchesType;
+  });
 
   const handleAnswer = (optionIndex: number) => {
     const newAnswers = [...userAnswers];
@@ -502,21 +509,85 @@ export default function App() {
                 exit={{ opacity: 0, x: -20 }}
                 className="h-full flex flex-col"
               >
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 gap-4">
                   <div>
                     <h2 className="text-2xl font-bold text-slate-800">Resource Vault</h2>
                     <p className="text-slate-500">Access all previous year question papers and answer keys.</p>
                   </div>
-                  <div className="flex gap-2">
-                    {['All', 'GATE', 'JAM', 'TIFR'].map(cat => (
-                      <button 
-                        key={cat}
-                        className="px-4 py-2 rounded-full text-sm font-medium bg-white border border-slate-200 hover:border-emerald-500 hover:text-emerald-600 transition-all shadow-sm"
-                      >
-                        {cat}
-                      </button>
-                    ))}
+                  <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                    <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
+                      {['All', 'GATE', 'JAM', 'TIFR'].map(cat => (
+                        <button 
+                          key={cat}
+                          onClick={() => setSelectedCategory(cat)}
+                          className={cn(
+                            "px-4 py-2 rounded-full text-sm font-medium border transition-all shadow-sm shrink-0",
+                            selectedCategory === cat 
+                              ? "bg-emerald-600 text-white border-emerald-600" 
+                              : "bg-white border-slate-200 hover:border-emerald-500 hover:text-emerald-600 text-slate-700"
+                          )}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
+                      {['All', 'Paper', 'Key', 'Repository'].map(type => (
+                        <button 
+                          key={type}
+                          onClick={() => setSelectedType(type)}
+                          className={cn(
+                            "px-4 py-2 rounded-full text-sm font-medium border transition-all shadow-sm shrink-0",
+                            selectedType === type 
+                              ? "bg-blue-600 text-white border-blue-600" 
+                              : "bg-white border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-700"
+                          )}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
                   </div>
+                </div>
+
+                {/* YouTube Deep Link Section */}
+                <div className="mb-8 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center">
+                  <div className="flex-1 w-full relative">
+                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                      <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="Paste YouTube URL here for quick deep link..."
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
+                      value={youtubeLink}
+                      onChange={(e) => setYoutubeLink(e.target.value)}
+                    />
+                  </div>
+                  <button 
+                    onClick={() => {
+                      if (!youtubeLink) return;
+                      try {
+                        const url = new URL(youtubeLink);
+                        let videoId = '';
+                        let t = url.searchParams.get('t') || '';
+                        if (url.hostname === 'youtu.be') {
+                          videoId = url.pathname.slice(1);
+                        } else if (url.hostname.includes('youtube.com')) {
+                          videoId = url.searchParams.get('v') || '';
+                        }
+                        if (videoId) {
+                          window.open(`vnd.youtube://${videoId}${t ? `?t=${t}` : ''}`, '_blank');
+                        }
+                      } catch (e) {
+                        // Ignore invalid URLs
+                      }
+                    }}
+                    disabled={!youtubeLink || (!youtubeLink.includes('youtube.com') && !youtubeLink.includes('youtu.be'))}
+                    className="w-full sm:w-auto px-6 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-sm shrink-0"
+                  >
+                    Open Deep Link
+                  </button>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1 min-h-0">
