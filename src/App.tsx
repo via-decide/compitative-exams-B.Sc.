@@ -50,11 +50,13 @@ const progressData = [
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
+      setWindowWidth(window.innerWidth);
       if (window.innerWidth >= 1024) {
         setIsSidebarOpen(true);
       } else {
@@ -126,8 +128,8 @@ export default function App() {
       <motion.aside 
         initial={false}
         animate={{ 
-          width: isSidebarOpen ? 260 : (window.innerWidth < 1024 ? 0 : 80),
-          x: (window.innerWidth < 1024 && !isSidebarOpen) ? -260 : 0
+          width: isSidebarOpen ? 260 : (windowWidth < 1024 ? 0 : 80),
+          x: (windowWidth < 1024 && !isSidebarOpen) ? -260 : 0
         }}
         className={cn(
           "bg-white border-r border-slate-200 flex flex-col z-40 h-full transition-all duration-300 ease-in-out",
@@ -139,7 +141,7 @@ export default function App() {
             <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 shrink-0">
               <GraduationCap size={24} />
             </div>
-            {(isSidebarOpen || window.innerWidth >= 1024) && (
+            {(isSidebarOpen || windowWidth >= 1024) && (
               <motion.span 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: isSidebarOpen ? 1 : 0 }}
@@ -149,7 +151,7 @@ export default function App() {
               </motion.span>
             )}
           </div>
-          {window.innerWidth < 1024 && isSidebarOpen && (
+          {windowWidth < 1024 && isSidebarOpen && (
             <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 text-slate-400 hover:text-slate-600">
               <X size={20} />
             </button>
@@ -390,14 +392,34 @@ export default function App() {
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 hover:text-emerald-700 shrink-0"
                           >
-                            <span className="hidden sm:inline">Open in New Tab</span> <ExternalLink size={14} />
+                            <span className="hidden sm:inline">{selectedResource.type === 'Repository' ? 'Visit Repository' : 'Open in New Tab'}</span> <ExternalLink size={14} />
                           </a>
                         </div>
-                        <iframe 
-                          src={selectedResource.url} 
-                          className="w-full flex-1"
-                          title="PDF Viewer"
-                        />
+                        {selectedResource.type === 'Repository' ? (
+                          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-white">
+                            <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4">
+                              <ExternalLink size={32} />
+                            </div>
+                            <h4 className="text-lg font-bold text-slate-800 mb-2">External Repository</h4>
+                            <p className="text-sm text-slate-500 max-w-xs mb-6">
+                              This resource is an external repository and cannot be viewed directly inside the app.
+                            </p>
+                            <a 
+                              href={selectedResource.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="px-6 py-2.5 bg-emerald-600 text-white rounded-full font-bold text-sm shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all"
+                            >
+                              Go to Repository
+                            </a>
+                          </div>
+                        ) : (
+                          <iframe 
+                            src={selectedResource.url} 
+                            className="w-full flex-1"
+                            title="PDF Viewer"
+                          />
+                        )}
                       </>
                     ) : (
                       <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-4 p-12 text-center">

@@ -4,7 +4,7 @@ export interface Resource {
   category: 'GATE' | 'JAM' | 'TIFR';
   year: number;
   url: string;
-  type: 'Paper' | 'Key';
+  type: 'Paper' | 'Key' | 'Repository';
 }
 
 export const CHEMISTRY_RESOURCES: Resource[] = [
@@ -25,6 +25,14 @@ export const CHEMISTRY_RESOURCES: Resource[] = [
     type: 'Key',
   },
   {
+    id: 'gate-2024-paper',
+    title: 'GATE 2024 Chemistry Paper',
+    category: 'GATE',
+    year: 2024,
+    url: 'https://gate2025.iitr.ac.in/doc/download/2024/CY24S1.pdf',
+    type: 'Paper',
+  },
+  {
     id: 'gate-2024-key',
     title: 'GATE 2024 Answer Key',
     category: 'GATE',
@@ -33,11 +41,35 @@ export const CHEMISTRY_RESOURCES: Resource[] = [
     type: 'Key',
   },
   {
+    id: 'gate-2023-key',
+    title: 'GATE 2023 Answer Key',
+    category: 'GATE',
+    year: 2023,
+    url: 'https://gate.iitk.ac.in/GATE2023/doc/papers/2023/ANS/CY_ANS_GATE2023.pdf',
+    type: 'Key',
+  },
+  {
     id: 'gate-2022-paper',
     title: 'GATE 2022 Chemistry Paper',
     category: 'GATE',
     year: 2022,
     url: 'https://gate.iitk.ac.in/GATE2023/doc/papers/2022/cy_2022.pdf',
+    type: 'Paper',
+  },
+  {
+    id: 'gate-2021-paper',
+    title: 'GATE 2021 Chemistry Paper',
+    category: 'GATE',
+    year: 2021,
+    url: 'https://gate2025.iitr.ac.in/doc/download/2021/cy_2021.pdf',
+    type: 'Paper',
+  },
+  {
+    id: 'gate-2010-paper',
+    title: 'GATE 2010 Chemistry Paper',
+    category: 'GATE',
+    year: 2010,
+    url: 'https://gate.iitk.ac.in/GATE2023/doc/papers/2010/cy_2010.pdf',
     type: 'Paper',
   },
   {
@@ -55,6 +87,54 @@ export const CHEMISTRY_RESOURCES: Resource[] = [
     year: 2022,
     url: 'https://media.ifasonline.com/production/pyqpdf/902a5f47-6fe2-4003-907b-2b5d6397959c.pdf',
     type: 'Paper',
+  },
+  {
+    id: 'gate-repo-1',
+    title: 'GATE Official Repository (IITR)',
+    category: 'GATE',
+    year: 0,
+    url: 'https://gate2025.iitr.ac.in/download.html',
+    type: 'Repository',
+  },
+  {
+    id: 'gate-repo-2',
+    title: 'GATE Official Repository (IITK)',
+    category: 'GATE',
+    year: 0,
+    url: 'https://gate.iitk.ac.in/GATE2023/papers_keys.html',
+    type: 'Repository',
+  },
+  {
+    id: 'jam-repo-1',
+    title: 'IIT JAM Official Repository (IITB)',
+    category: 'JAM',
+    year: 0,
+    url: 'https://jam2026.iitb.ac.in/oldQP.html',
+    type: 'Repository',
+  },
+  {
+    id: 'jam-repo-2',
+    title: 'IIT JAM Official Repository (IITD)',
+    category: 'JAM',
+    year: 0,
+    url: 'https://jam2025.iitd.ac.in/qp.php',
+    type: 'Repository',
+  },
+  {
+    id: 'tifr-repo-1',
+    title: 'TIFR Comprehensive Archive (IFAS)',
+    category: 'TIFR',
+    year: 0,
+    url: 'https://ifasonline.com/tifr/chemistry-previous-year-question-paper/6433b6f76f88433b504b4290/6433af3f6f88433b504b4171',
+    type: 'Repository',
+  },
+  {
+    id: 'tifr-repo-2',
+    title: 'TIFR Previous Papers (Career Endeavour)',
+    category: 'TIFR',
+    year: 0,
+    url: 'https://careerendeavour.com/tifr-previous-papers/',
+    type: 'Repository',
   }
 ];
 
