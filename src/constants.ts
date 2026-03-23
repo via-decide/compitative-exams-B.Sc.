@@ -25,7 +25,7 @@ export const LORE_MISSIONS: LoreMission[] = [
     id: 'anti-grav-phenomenon',
     title: 'The Anti-Grav Phenomenon',
     topic: 'Surface Chemistry & Froth Flotation',
-    loreText: 'In the year 2075, traditional mining is too slow. Scientists discovered that sulfide ores like Galena (PbS) and Copper Pyrites (CuFeS2) possess a "hidden buoyancy." By applying specific chemical "cloaks" (collectors), we can make these heavy metal particles defy gravity. While the worthless rocky gangue sinks like lead, our precious metals rise to the heavens on air-cushioned bubbles. This isn\'t magic—it\'s Surface Chemistry.',
+    loreText: 'In the year 2075, humanity\'s insatiable hunger for resources has pushed traditional mining to its absolute limits. Deep within the asteroid belt, scientists discovered a revolutionary technique. By applying specific chemical "cloaks"—advanced collectors like Potassium Ethyl Xanthate—they found a way to make heavy, metal-rich sulfide ores defy gravity itself. While the worthless, rocky gangue sinks into the abyss, the precious metals rise to the heavens, carried on air-cushioned bubbles stabilized by pine oil. This isn\'t magic; it\'s the precise manipulation of surface tension and hydrophobicity. You are tasked with mastering this delicate balance to extract the galaxy\'s most critical resources before the colony runs out of power.',
     modes: {
       learner: {
         id: 'jam-master-sim',
@@ -51,6 +51,70 @@ export const LORE_MISSIONS: LoreMission[] = [
           'Level Up: As you progress, you unlock Roasting and Smelting modules to turn your concentrated froth into pure gold, copper, and lead bars to sell on the Galactic Market.'
         ],
         hook: 'High-intensity "Emergency Events" where a surge of "Acid Rain" changes the pH of your tanks, forcing you to react instantly to keep your ore floating.'
+      }
+    }
+  },
+  {
+    id: 'quantum-forge',
+    title: 'The Quantum Forge',
+    topic: 'Quantum Chemistry & Molecular Orbitals',
+    loreText: 'Deep within the neon-lit corridors of the Neo-Tokyo Research Nexus, a rogue AI has locked down the city\'s primary energy grid. The only way to bypass the security protocols is to manually realign the molecular orbitals of the core\'s power crystals. You must dive into the subatomic realm, navigating the probability clouds of electrons. By understanding the intricate dance of constructive and destructive interference, you will forge new bonds and stabilize the energy output. The fate of millions rests on your mastery of Schrödinger\'s equations and the Pauli Exclusion Principle. Step into the Quantum Forge and illuminate the darkness.',
+    modes: {
+      learner: {
+        id: 'orbital-architect',
+        title: 'Orbital Architect',
+        targetAudience: 'For Learners',
+        goal: 'Master the principles of Molecular Orbital Theory and electron configuration.',
+        interfaceDesc: 'A holographic projection of atomic orbitals.',
+        gameplay: [
+          'Phase 1: The Aufbau Sequence. Arrange electrons in the correct energy levels to unlock the first security gate.',
+          'Phase 2: The HOMO-LUMO Gap. Identify the highest occupied and lowest unoccupied molecular orbitals to trigger the energy transfer.'
+        ],
+        whyItWorks: 'Visualizes abstract quantum concepts, making them tangible and interactive.'
+      },
+      gamer: {
+        id: 'quantum-breach',
+        title: 'Quantum Breach',
+        targetAudience: 'For Gamers',
+        goal: 'Hack the AI core by solving rapid-fire orbital puzzles under time pressure.',
+        interfaceDesc: 'A fast-paced, cyberpunk hacking interface.',
+        gameplay: [
+          'Match the correct orbital shapes to bypass firewalls.',
+          'Manage your energy levels; incorrect configurations will cause system instability and reset your progress.'
+        ],
+        hook: 'A thrilling race against time with dynamic, pulsing synthwave beats.'
+      }
+    }
+  },
+  {
+    id: 'catalyst-protocol',
+    title: 'The Catalyst Protocol',
+    topic: 'Chemical Kinetics & Catalysis',
+    loreText: 'A deadly pathogen is rapidly spreading across the terraformed colonies of Mars. The cure exists, but the synthesis reaction is far too slow to save the population in time. You have been granted access to the Catalyst Protocol—a highly classified database of transition metal catalysts. Your mission is to design a reaction pathway that lowers the activation energy and accelerates the synthesis by orders of magnitude. You must carefully monitor temperature, pressure, and concentration, ensuring the reaction doesn\'t spiral out of control. Time is running out, and every second counts. Will you find the perfect catalyst before it\'s too late?',
+    modes: {
+      learner: {
+        id: 'kinetics-commander',
+        title: 'Kinetics Commander',
+        targetAudience: 'For Learners',
+        goal: 'Understand the Arrhenius equation, activation energy, and the role of catalysts.',
+        interfaceDesc: 'A high-stakes bio-chemical laboratory dashboard.',
+        gameplay: [
+          'Analyze reaction coordinate diagrams to identify the rate-determining step.',
+          'Select the appropriate transition metal catalyst to lower the activation energy barrier.'
+        ],
+        whyItWorks: 'Contextualizes chemical kinetics within a life-or-death scenario, emphasizing the real-world importance of reaction rates.'
+      },
+      gamer: {
+        id: 'reaction-rush',
+        title: 'Reaction Rush',
+        targetAudience: 'For Gamers',
+        goal: 'Synthesize the cure as quickly as possible while managing volatile reaction conditions.',
+        interfaceDesc: 'A frantic, multi-tasking simulation with warning lights and pressure gauges.',
+        gameplay: [
+          'Balance temperature and pressure to maximize yield without causing an explosion.',
+          'Quickly swap out degraded catalysts to maintain the reaction speed.'
+        ],
+        hook: 'Intense resource management and split-second decision making.'
       }
     }
   }
