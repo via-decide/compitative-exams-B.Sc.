@@ -70,11 +70,35 @@ export default function App() {
   }, []);
   
   // Quiz State
-  const [quizStarted, setQuizStarted] = useState(false);
-  const [activeQuiz, setActiveQuiz] = useState<QuizQuestion[]>(SAMPLE_QUIZ);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<number[]>([]);
-  const [quizFinished, setQuizFinished] = useState(false);
+  const [quizStarted, setQuizStarted] = useState<boolean>(() => {
+    const saved = localStorage.getItem('quiz_started');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [activeQuizId, setActiveQuizId] = useState<'SAMPLE_QUIZ' | 'IIT_JAM_QUIZ'>(() => {
+    return (localStorage.getItem('quiz_active_id') as 'SAMPLE_QUIZ' | 'IIT_JAM_QUIZ') || 'SAMPLE_QUIZ';
+  });
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(() => {
+    const saved = localStorage.getItem('quiz_current_index');
+    return saved ? JSON.parse(saved) : 0;
+  });
+  const [userAnswers, setUserAnswers] = useState<number[]>(() => {
+    const saved = localStorage.getItem('quiz_user_answers');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [quizFinished, setQuizFinished] = useState<boolean>(() => {
+    const saved = localStorage.getItem('quiz_finished');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  const activeQuiz = activeQuizId === 'IIT_JAM_QUIZ' ? IIT_JAM_QUIZ : SAMPLE_QUIZ;
+
+  useEffect(() => {
+    localStorage.setItem('quiz_started', JSON.stringify(quizStarted));
+    localStorage.setItem('quiz_active_id', activeQuizId);
+    localStorage.setItem('quiz_current_index', JSON.stringify(currentQuestionIndex));
+    localStorage.setItem('quiz_user_answers', JSON.stringify(userAnswers));
+    localStorage.setItem('quiz_finished', JSON.stringify(quizFinished));
+  }, [quizStarted, activeQuizId, currentQuestionIndex, userAnswers, quizFinished]);
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
@@ -460,7 +484,7 @@ export default function App() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
                       <button 
-                        onClick={() => { setActiveQuiz(SAMPLE_QUIZ); setQuizStarted(true); }}
+                        onClick={() => { setActiveQuizId('SAMPLE_QUIZ'); setQuizStarted(true); }}
                         className="group bg-white p-6 rounded-3xl border-2 border-slate-100 hover:border-emerald-500 transition-all text-left shadow-sm hover:shadow-xl hover:-translate-y-1"
                       >
                         <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -476,7 +500,7 @@ export default function App() {
                       </button>
 
                       <button 
-                        onClick={() => { setActiveQuiz(IIT_JAM_QUIZ); setQuizStarted(true); }}
+                        onClick={() => { setActiveQuizId('IIT_JAM_QUIZ'); setQuizStarted(true); }}
                         className="group bg-white p-6 rounded-3xl border-2 border-slate-100 hover:border-indigo-500 transition-all text-left shadow-sm hover:shadow-xl hover:-translate-y-1"
                       >
                         <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
