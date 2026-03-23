@@ -204,8 +204,9 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedType, setSelectedType] = useState('All');
+  const [vaultSearchQuery, setVaultSearchQuery] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [youtubeLink, setYoutubeLink] = useState('');
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [selectedLoreId, setSelectedLoreId] = useState<string | null>(null);
@@ -293,13 +294,34 @@ export default function App() {
   };
 
   const filteredResources = CHEMISTRY_RESOURCES.filter(r => {
-    const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesGlobalSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           r.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           r.type.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || r.category === selectedCategory;
-    const matchesType = selectedType === 'All' || r.type === selectedType;
-    return matchesSearch && matchesCategory && matchesType;
+    const matchesVaultSearch = r.title.toLowerCase().includes(vaultSearchQuery.toLowerCase());
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(r.category);
+    const matchesType = selectedTypes.length === 0 || selectedTypes.includes(r.type);
+    return matchesGlobalSearch && matchesVaultSearch && matchesCategory && matchesType;
   });
+
+  const toggleCategory = (cat: string) => {
+    if (cat === 'All') {
+      setSelectedCategories([]);
+    } else {
+      setSelectedCategories(prev => 
+        prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+      );
+    }
+  };
+
+  const toggleType = (type: string) => {
+    if (type === 'All') {
+      setSelectedTypes([]);
+    } else {
+      setSelectedTypes(prev => 
+        prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+      );
+    }
+  };
 
   const handleAnswer = (optionIndex: number) => {
     const newAnswers = [...userAnswers];
@@ -567,38 +589,56 @@ export default function App() {
                     <h2 className="text-2xl font-bold text-slate-800">Resource Vault</h2>
                     <p className="text-slate-500">Access all previous year question papers and answer keys.</p>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-                    <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
-                      {['All', 'GATE', 'JAM', 'TIFR'].map(cat => (
-                        <button 
-                          key={cat}
-                          onClick={() => setSelectedCategory(cat)}
-                          className={cn(
-                            "px-4 py-2 rounded-full text-sm font-medium border transition-all shadow-sm shrink-0",
-                            selectedCategory === cat 
-                              ? "bg-emerald-600 text-white border-emerald-600" 
-                              : "bg-white border-slate-200 hover:border-emerald-500 hover:text-emerald-600 text-slate-700"
-                          )}
-                        >
-                          {cat}
-                        </button>
-                      ))}
+                  <div className="flex flex-col gap-4 w-full lg:w-auto">
+                    <div className="relative w-full">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                      <input 
+                        type="text" 
+                        placeholder="Search vault by title..."
+                        className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all shadow-sm"
+                        value={vaultSearchQuery}
+                        onChange={(e) => setVaultSearchQuery(e.target.value)}
+                      />
                     </div>
-                    <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
-                      {['All', 'Paper', 'Key', 'Repository'].map(type => (
-                        <button 
-                          key={type}
-                          onClick={() => setSelectedType(type)}
-                          className={cn(
-                            "px-4 py-2 rounded-full text-sm font-medium border transition-all shadow-sm shrink-0",
-                            selectedType === type 
-                              ? "bg-blue-600 text-white border-blue-600" 
-                              : "bg-white border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-700"
-                          )}
-                        >
-                          {type}
-                        </button>
-                      ))}
+                    <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                      <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
+                        {['All', 'GATE', 'JAM', 'TIFR'].map(cat => {
+                          const isSelected = cat === 'All' ? selectedCategories.length === 0 : selectedCategories.includes(cat);
+                          return (
+                            <button 
+                              key={cat}
+                              onClick={() => toggleCategory(cat)}
+                              className={cn(
+                                "px-4 py-2 rounded-full text-sm font-medium border transition-all shadow-sm shrink-0",
+                                isSelected 
+                                  ? "bg-emerald-600 text-white border-emerald-600" 
+                                  : "bg-white border-slate-200 hover:border-emerald-500 hover:text-emerald-600 text-slate-700"
+                              )}
+                            >
+                              {cat}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
+                        {['All', 'Paper', 'Key', 'Repository'].map(type => {
+                          const isSelected = type === 'All' ? selectedTypes.length === 0 : selectedTypes.includes(type);
+                          return (
+                            <button 
+                              key={type}
+                              onClick={() => toggleType(type)}
+                              className={cn(
+                                "px-4 py-2 rounded-full text-sm font-medium border transition-all shadow-sm shrink-0",
+                                isSelected 
+                                  ? "bg-blue-600 text-white border-blue-600" 
+                                  : "bg-white border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-700"
+                              )}
+                            >
+                              {type}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
