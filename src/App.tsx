@@ -135,6 +135,7 @@ export default function App() {
             </div>
             {(isSidebarOpen || isDesktop) && (
               <motion.div 
+              <motion.span 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: isSidebarOpen ? 1 : 0 }}
                 className="min-w-0"
