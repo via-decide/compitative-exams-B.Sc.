@@ -520,30 +520,57 @@ export default function App() {
                     </button>
                   </div>
                 ) : (
-                  <div className="flex-1 flex flex-col py-8">
-                    <div className="flex items-center justify-between mb-12">
+                  <div className="flex-1 flex flex-col py-8 overflow-hidden relative">
+                    {/* Full width progress bar at top */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${((currentQuestionIndex + 1) / SAMPLE_QUIZ.length) * 100}%` }}
+                        className="h-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between mb-8 mt-2">
                       <div className="flex items-center gap-4">
                         <button 
                           onClick={() => setQuizStarted(false)}
-                          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                          className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-400 hover:text-slate-600"
                         >
                           <X size={20} />
                         </button>
-                        <span className="font-bold text-slate-700">Question {currentQuestionIndex + 1} of {SAMPLE_QUIZ.length}</span>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assessment In Progress</span>
+                          <span className="font-black text-slate-800 text-lg">Question {currentQuestionIndex + 1} <span className="text-slate-300 font-medium">/ {SAMPLE_QUIZ.length}</span></span>
+                        </div>
                       </div>
-                      <div className="w-48 h-2 bg-slate-200 rounded-full overflow-hidden">
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${((currentQuestionIndex + 1) / SAMPLE_QUIZ.length) * 100}%` }}
-                          className="h-full bg-emerald-500"
-                        />
+
+                      {/* Stepper dots */}
+                      <div className="hidden sm:flex items-center gap-1.5">
+                        {SAMPLE_QUIZ.map((_, idx) => (
+                          <div 
+                            key={idx}
+                            className={cn(
+                              "w-2 h-2 rounded-full transition-all duration-300",
+                              idx === currentQuestionIndex ? "w-6 bg-emerald-500" : 
+                              idx < currentQuestionIndex ? "bg-emerald-200" : "bg-slate-200"
+                            )}
+                          />
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 rounded-full border border-amber-100">
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                        <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Live Test</span>
                       </div>
                     </div>
 
-                    <div className="flex-1 space-y-8">
-                      <h3 className="text-2xl font-bold text-slate-800 leading-snug">
-                        {SAMPLE_QUIZ[currentQuestionIndex].text}
-                      </h3>
+                    <div className="flex-1 space-y-8 overflow-y-auto pr-2">
+                      <div className="space-y-4">
+                        <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-wider">Multiple Choice</span>
+                        <h3 className="text-2xl font-bold text-slate-800 leading-snug">
+                          {SAMPLE_QUIZ[currentQuestionIndex].text}
+                        </h3>
+                      </div>
 
                       <div className="grid grid-cols-1 gap-4">
                         {SAMPLE_QUIZ[currentQuestionIndex].options.map((option, idx) => (
