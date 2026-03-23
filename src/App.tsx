@@ -33,7 +33,7 @@ import {
   Area
 } from 'recharts';
 import { cn } from './lib/utils';
-import { CHEMISTRY_RESOURCES, SAMPLE_QUIZ, type Resource, type QuizQuestion } from './constants';
+import { CHEMISTRY_RESOURCES, SAMPLE_QUIZ, IIT_JAM_QUIZ, type Resource, type QuizQuestion } from './constants';
 
 type Tab = 'dashboard' | 'vault' | 'test' | 'settings';
 
@@ -71,6 +71,7 @@ export default function App() {
   
   // Quiz State
   const [quizStarted, setQuizStarted] = useState(false);
+  const [activeQuiz, setActiveQuiz] = useState<QuizQuestion[]>(SAMPLE_QUIZ);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<number[]>([]);
   const [quizFinished, setQuizFinished] = useState(false);
@@ -94,7 +95,7 @@ export default function App() {
   };
 
   const nextQuestion = () => {
-    if (currentQuestionIndex < SAMPLE_QUIZ.length - 1) {
+    if (currentQuestionIndex < activeQuiz.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       setQuizFinished(true);
@@ -104,9 +105,9 @@ export default function App() {
   const calculateScore = () => {
     let correct = 0;
     userAnswers.forEach((ans, idx) => {
-      if (ans === SAMPLE_QUIZ[idx].correctAnswer) correct++;
+      if (ans === activeQuiz[idx].correctAnswer) correct++;
     });
-    return (correct / SAMPLE_QUIZ.length) * 100;
+    return (correct / activeQuiz.length) * 100;
   };
 
   return (
@@ -451,31 +452,45 @@ export default function App() {
                       <Trophy size={48} />
                     </div>
                     <div className="space-y-4">
-                      <h2 className="text-4xl font-black text-slate-800 tracking-tight">Chemistry Mock Test</h2>
+                      <h2 className="text-4xl font-black text-slate-800 tracking-tight">Test Center</h2>
                       <p className="text-slate-500 max-w-md mx-auto">
-                        Test your knowledge with high-yield questions from GATE, JAM, and TIFR archives.
+                        Select an assessment to test your knowledge with high-yield questions.
                       </p>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 w-full max-w-md">
-                      <div className="bg-white p-4 rounded-2xl border border-slate-200">
-                        <p className="text-2xl font-bold">10</p>
-                        <p className="text-xs text-slate-500">Questions</p>
-                      </div>
-                      <div className="bg-white p-4 rounded-2xl border border-slate-200">
-                        <p className="text-2xl font-bold">15m</p>
-                        <p className="text-xs text-slate-500">Duration</p>
-                      </div>
-                      <div className="bg-white p-4 rounded-2xl border border-slate-200">
-                        <p className="text-2xl font-bold">Hard</p>
-                        <p className="text-xs text-slate-500">Difficulty</p>
-                      </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+                      <button 
+                        onClick={() => { setActiveQuiz(SAMPLE_QUIZ); setQuizStarted(true); }}
+                        className="group bg-white p-6 rounded-3xl border-2 border-slate-100 hover:border-emerald-500 transition-all text-left shadow-sm hover:shadow-xl hover:-translate-y-1"
+                      >
+                        <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                          <BookOpen size={24} />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 mb-2">General Chemistry</h3>
+                        <p className="text-sm text-slate-500 mb-4">Comprehensive mock test covering basic to advanced concepts.</p>
+                        <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                          <span>{SAMPLE_QUIZ.length} Questions</span>
+                          <span>•</span>
+                          <span>15 Mins</span>
+                        </div>
+                      </button>
+
+                      <button 
+                        onClick={() => { setActiveQuiz(IIT_JAM_QUIZ); setQuizStarted(true); }}
+                        className="group bg-white p-6 rounded-3xl border-2 border-slate-100 hover:border-indigo-500 transition-all text-left shadow-sm hover:shadow-xl hover:-translate-y-1"
+                      >
+                        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                          <GraduationCap size={24} />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 mb-2">IIT JAM Special</h3>
+                        <p className="text-sm text-slate-500 mb-4">Curated questions specifically for IIT JAM Chemistry aspirants.</p>
+                        <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                          <span>{IIT_JAM_QUIZ.length} Questions</span>
+                          <span>•</span>
+                          <span>10 Mins</span>
+                        </div>
+                      </button>
                     </div>
-                    <button 
-                      onClick={() => setQuizStarted(true)}
-                      className="px-12 py-4 bg-emerald-600 text-white rounded-full font-bold text-lg shadow-xl shadow-emerald-200 hover:bg-emerald-700 hover:-translate-y-1 transition-all active:scale-95"
-                    >
-                      Start Assessment
-                    </button>
                   </div>
                 ) : quizFinished ? (
                   <div className="flex-1 flex flex-col items-center justify-center text-center space-y-8">
@@ -493,10 +508,10 @@ export default function App() {
                     </div>
                     <div className="space-y-2">
                       <h2 className="text-3xl font-bold text-slate-800">Test Completed!</h2>
-                      <p className="text-slate-500">Great job! You've completed the Chemistry Mock Test.</p>
+                      <p className="text-slate-500">Great job! You've completed the assessment.</p>
                     </div>
                     <div className="w-full max-w-md space-y-4">
-                      {SAMPLE_QUIZ.map((q, idx) => (
+                      {activeQuiz.map((q, idx) => (
                         <div key={q.id} className="bg-white p-4 rounded-2xl border border-slate-200 text-left">
                           <div className="flex items-start gap-3">
                             {userAnswers[idx] === q.correctAnswer ? (
@@ -525,7 +540,7 @@ export default function App() {
                     <div className="absolute top-0 left-0 right-0 h-1 bg-slate-100">
                       <motion.div 
                         initial={{ width: 0 }}
-                        animate={{ width: `${((currentQuestionIndex + 1) / SAMPLE_QUIZ.length) * 100}%` }}
+                        animate={{ width: `${((currentQuestionIndex + 1) / activeQuiz.length) * 100}%` }}
                         className="h-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
                       />
                     </div>
@@ -540,13 +555,13 @@ export default function App() {
                         </button>
                         <div className="flex flex-col">
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Assessment In Progress</span>
-                          <span className="font-black text-slate-800 text-lg">Question {currentQuestionIndex + 1} <span className="text-slate-300 font-medium">/ {SAMPLE_QUIZ.length}</span></span>
+                          <span className="font-black text-slate-800 text-lg">Question {currentQuestionIndex + 1} <span className="text-slate-300 font-medium">/ {activeQuiz.length}</span></span>
                         </div>
                       </div>
 
                       {/* Stepper dots */}
                       <div className="hidden sm:flex items-center gap-1.5">
-                        {SAMPLE_QUIZ.map((_, idx) => (
+                        {activeQuiz.map((_, idx) => (
                           <div 
                             key={idx}
                             className={cn(
@@ -568,12 +583,12 @@ export default function App() {
                       <div className="space-y-4">
                         <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-wider">Multiple Choice</span>
                         <h3 className="text-2xl font-bold text-slate-800 leading-snug">
-                          {SAMPLE_QUIZ[currentQuestionIndex].text}
+                          {activeQuiz[currentQuestionIndex].text}
                         </h3>
                       </div>
 
                       <div className="grid grid-cols-1 gap-4">
-                        {SAMPLE_QUIZ[currentQuestionIndex].options.map((option, idx) => (
+                        {activeQuiz[currentQuestionIndex].options.map((option, idx) => (
                           <button
                             key={idx}
                             onClick={() => handleAnswer(idx)}
@@ -609,7 +624,7 @@ export default function App() {
                         disabled={userAnswers[currentQuestionIndex] === undefined}
                         className="px-10 py-4 bg-slate-900 text-white rounded-full font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-black transition-all flex items-center gap-2"
                       >
-                        {currentQuestionIndex === SAMPLE_QUIZ.length - 1 ? 'Finish Test' : 'Next Question'}
+                        {currentQuestionIndex === activeQuiz.length - 1 ? 'Finish Test' : 'Next Question'}
                         <ChevronRight size={20} />
                       </button>
                     </div>

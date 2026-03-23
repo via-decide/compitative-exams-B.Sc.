@@ -208,3 +208,66 @@ export const SAMPLE_QUIZ: QuizQuestion[] = [
     explanation: 'For a linear molecule, there are 3 translational and 2 rotational degrees of freedom, leaving 3N - 5 vibrational modes.'
   }
 ];
+
+export const IIT_JAM_QUIZ: QuizQuestion[] = [
+  {
+    id: 'jam-1',
+    text: 'The correct order of acidity for the following phenols is:',
+    options: [
+      'p-Nitrophenol > o-Nitrophenol > m-Nitrophenol',
+      'o-Nitrophenol > p-Nitrophenol > m-Nitrophenol',
+      'p-Nitrophenol > m-Nitrophenol > o-Nitrophenol',
+      'm-Nitrophenol > p-Nitrophenol > o-Nitrophenol'
+    ],
+    correctAnswer: 0,
+    explanation: 'p-Nitrophenol is most acidic due to both -I and -R effects of the nitro group, while o-nitrophenol has intramolecular hydrogen bonding which slightly reduces its acidity.'
+  },
+  {
+    id: 'jam-2',
+    text: 'The major product formed in the reaction of 1-butene with HBr in the presence of peroxides is:',
+    options: [
+      '2-Bromobutane',
+      '1-Bromobutane',
+      '2,3-Dibromobutane',
+      '1,2-Dibromobutane'
+    ],
+    correctAnswer: 1,
+    explanation: 'In the presence of peroxides, HBr adds to alkenes via a free radical mechanism, following Anti-Markovnikov regioselectivity.'
+  },
+  {
+    id: 'jam-3',
+    text: 'The number of unpaired electrons in the complex [CoF6]3- is:',
+    options: [
+      '0',
+      '2',
+      '4',
+      '5'
+    ],
+    correctAnswer: 2,
+    explanation: 'Co3+ is d6. F- is a weak field ligand, so it forms a high-spin complex with 4 unpaired electrons.'
+  },
+  {
+    id: 'jam-4',
+    text: 'The unit of the rate constant for a second-order reaction is:',
+    options: [
+      's-1',
+      'L mol-1 s-1',
+      'mol L-1 s-1',
+      'L2 mol-2 s-1'
+    ],
+    correctAnswer: 1,
+    explanation: 'For a second-order reaction, rate = k[A]2. So k = rate/[A]2 = (mol L-1 s-1) / (mol L-1)2 = L mol-1 s-1.'
+  },
+  {
+    id: 'jam-5',
+    text: 'The hybridization of the central atom in XeF4 is:',
+    options: [
+      'sp3',
+      'sp3d',
+      'sp3d2',
+      'd2sp3'
+    ],
+    correctAnswer: 2,
+    explanation: 'Xe has 8 valence electrons. In XeF4, there are 4 bond pairs and 2 lone pairs, giving a steric number of 6, which corresponds to sp3d2 hybridization (square planar geometry).'
+  }
+];
