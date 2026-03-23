@@ -234,13 +234,25 @@ export default function App() {
   const [activeQuizId, setActiveQuizId] = useState<'SAMPLE_QUIZ' | 'IIT_JAM_QUIZ'>(() => {
     return (localStorage.getItem('quiz_active_id') as 'SAMPLE_QUIZ' | 'IIT_JAM_QUIZ') || 'SAMPLE_QUIZ';
   });
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(() => {
-    const saved = localStorage.getItem('quiz_current_index');
-    return saved ? JSON.parse(saved) : 0;
-  });
-  const [userAnswers, setUserAnswers] = useState<number[]>(() => {
-    const saved = localStorage.getItem('quiz_user_answers');
-    return saved ? JSON.parse(saved) : [];
+  const [quizProgress, setQuizProgress] = useState<Record<string, { index: number, answers: number[] }>>(() => {
+    const saved = localStorage.getItem('quiz_progress');
+    if (saved) return JSON.parse(saved);
+    
+    // Migrate old state if exists
+    const oldAnswers = localStorage.getItem('quiz_user_answers');
+    const oldIndex = localStorage.getItem('quiz_current_index');
+    const oldActiveId = localStorage.getItem('quiz_active_id');
+    
+    if (oldAnswers && oldActiveId) {
+      return {
+        [oldActiveId]: {
+          index: oldIndex ? JSON.parse(oldIndex) : 0,
+          answers: JSON.parse(oldAnswers)
+        }
+      };
+    }
+    
+    return {};
   });
   const [quizFinished, setQuizFinished] = useState<boolean>(() => {
     const saved = localStorage.getItem('quiz_finished');
@@ -249,13 +261,29 @@ export default function App() {
 
   const activeQuiz = activeQuizId === 'IIT_JAM_QUIZ' ? IIT_JAM_QUIZ : SAMPLE_QUIZ;
 
+  const currentQuestionIndex = quizProgress[activeQuizId]?.index || 0;
+  const userAnswers = quizProgress[activeQuizId]?.answers || [];
+
+  const setCurrentQuestionIndex = (index: number) => {
+    setQuizProgress(prev => ({
+      ...prev,
+      [activeQuizId]: { index, answers: prev[activeQuizId]?.answers || [] }
+    }));
+  };
+
+  const setUserAnswers = (answers: number[]) => {
+    setQuizProgress(prev => ({
+      ...prev,
+      [activeQuizId]: { index: prev[activeQuizId]?.index || 0, answers }
+    }));
+  };
+
   useEffect(() => {
     localStorage.setItem('quiz_started', JSON.stringify(quizStarted));
     localStorage.setItem('quiz_active_id', activeQuizId);
-    localStorage.setItem('quiz_current_index', JSON.stringify(currentQuestionIndex));
-    localStorage.setItem('quiz_user_answers', JSON.stringify(userAnswers));
+    localStorage.setItem('quiz_progress', JSON.stringify(quizProgress));
     localStorage.setItem('quiz_finished', JSON.stringify(quizFinished));
-  }, [quizStarted, activeQuizId, currentQuestionIndex, userAnswers, quizFinished]);
+  }, [quizStarted, activeQuizId, quizProgress, quizFinished]);
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
@@ -715,37 +743,87 @@ export default function App() {
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
-                      <button 
-                        onClick={() => { setActiveQuizId('SAMPLE_QUIZ'); setQuizStarted(true); }}
-                        className="group bg-white p-6 rounded-3xl border-2 border-slate-100 hover:border-emerald-500 transition-all text-left shadow-sm hover:shadow-xl hover:-translate-y-1"
-                      >
+                      <div className="group bg-white p-6 rounded-3xl border-2 border-slate-100 hover:border-emerald-500 transition-all text-left shadow-sm hover:shadow-xl flex flex-col">
                         <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                           <BookOpen size={24} />
                         </div>
                         <h3 className="text-xl font-bold text-slate-800 mb-2">General Chemistry</h3>
-                        <p className="text-sm text-slate-500 mb-4">Comprehensive mock test covering basic to advanced concepts.</p>
-                        <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <p className="text-sm text-slate-500 mb-4 flex-1">Comprehensive mock test covering basic to advanced concepts.</p>
+                        <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">
                           <span>{SAMPLE_QUIZ.length} Questions</span>
                           <span>•</span>
                           <span>15 Mins</span>
                         </div>
-                      </button>
+                        
+                        {quizProgress['SAMPLE_QUIZ']?.answers?.length > 0 ? (
+                          <div className="flex gap-2 mt-auto">
+                            <button 
+                              onClick={() => { setActiveQuizId('SAMPLE_QUIZ'); setQuizStarted(true); }}
+                              className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors"
+                            >
+                              Resume
+                            </button>
+                            <button 
+                              onClick={() => { 
+                                setQuizProgress(prev => ({...prev, 'SAMPLE_QUIZ': { index: 0, answers: [] }}));
+                                setActiveQuizId('SAMPLE_QUIZ'); 
+                                setQuizStarted(true); 
+                              }}
+                              className="flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors"
+                            >
+                              Start Over
+                            </button>
+                          </div>
+                        ) : (
+                          <button 
+                            onClick={() => { setActiveQuizId('SAMPLE_QUIZ'); setQuizStarted(true); }}
+                            className="w-full py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-colors mt-auto"
+                          >
+                            Start Test
+                          </button>
+                        )}
+                      </div>
 
-                      <button 
-                        onClick={() => { setActiveQuizId('IIT_JAM_QUIZ'); setQuizStarted(true); }}
-                        className="group bg-white p-6 rounded-3xl border-2 border-slate-100 hover:border-indigo-500 transition-all text-left shadow-sm hover:shadow-xl hover:-translate-y-1"
-                      >
+                      <div className="group bg-white p-6 rounded-3xl border-2 border-slate-100 hover:border-indigo-500 transition-all text-left shadow-sm hover:shadow-xl flex flex-col">
                         <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                           <GraduationCap size={24} />
                         </div>
                         <h3 className="text-xl font-bold text-slate-800 mb-2">IIT JAM Special</h3>
-                        <p className="text-sm text-slate-500 mb-4">Curated questions specifically for IIT JAM Chemistry aspirants.</p>
-                        <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <p className="text-sm text-slate-500 mb-4 flex-1">Curated questions specifically for IIT JAM Chemistry aspirants.</p>
+                        <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">
                           <span>{IIT_JAM_QUIZ.length} Questions</span>
                           <span>•</span>
                           <span>10 Mins</span>
                         </div>
-                      </button>
+                        
+                        {quizProgress['IIT_JAM_QUIZ']?.answers?.length > 0 ? (
+                          <div className="flex gap-2 mt-auto">
+                            <button 
+                              onClick={() => { setActiveQuizId('IIT_JAM_QUIZ'); setQuizStarted(true); }}
+                              className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors"
+                            >
+                              Resume
+                            </button>
+                            <button 
+                              onClick={() => { 
+                                setQuizProgress(prev => ({...prev, 'IIT_JAM_QUIZ': { index: 0, answers: [] }}));
+                                setActiveQuizId('IIT_JAM_QUIZ'); 
+                                setQuizStarted(true); 
+                              }}
+                              className="flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors"
+                            >
+                              Start Over
+                            </button>
+                          </div>
+                        ) : (
+                          <button 
+                            onClick={() => { setActiveQuizId('IIT_JAM_QUIZ'); setQuizStarted(true); }}
+                            className="w-full py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-colors mt-auto"
+                          >
+                            Start Test
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ) : quizFinished ? (
