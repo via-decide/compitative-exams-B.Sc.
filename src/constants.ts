@@ -1,3 +1,61 @@
+export interface LoreMode {
+  id: string;
+  title: string;
+  targetAudience: string;
+  goal: string;
+  interfaceDesc: string;
+  gameplay: string[];
+  hook?: string;
+  whyItWorks?: string;
+}
+
+export interface LoreMission {
+  id: string;
+  title: string;
+  topic: string;
+  loreText: string;
+  modes: {
+    learner: LoreMode;
+    gamer: LoreMode;
+  };
+}
+
+export const LORE_MISSIONS: LoreMission[] = [
+  {
+    id: 'anti-grav-phenomenon',
+    title: 'The Anti-Grav Phenomenon',
+    topic: 'Surface Chemistry & Froth Flotation',
+    loreText: 'In the year 2075, traditional mining is too slow. Scientists discovered that sulfide ores like Galena (PbS) and Copper Pyrites (CuFeS2) possess a "hidden buoyancy." By applying specific chemical "cloaks" (collectors), we can make these heavy metal particles defy gravity. While the worthless rocky gangue sinks like lead, our precious metals rise to the heavens on air-cushioned bubbles. This isn\'t magic—it\'s Surface Chemistry.',
+    modes: {
+      learner: {
+        id: 'jam-master-sim',
+        title: 'The "JAM Master" Sim',
+        targetAudience: 'For Learners',
+        goal: 'Master the thermodynamics and surface chemistry required for the IIT JAM syllabus.',
+        interfaceDesc: 'A high-tech "Virtual Extraction Lab."',
+        gameplay: [
+          'Phase 1: The Reagent Lab. You are given a tray of chemicals: Potassium Ethyl Xanthate (Collector), Pine Oil (Frother), and Aniline (Stabilizer). You must click and drag the correct molecule to "cloak" the sulfide ore.',
+          'Phase 2: The pH Balance. A slider appears. To separate ZnS from PbS, you must adjust the pH using Sodium Cyanide (NaCN) as a depressant. If your pH is off, the "Antigravity" fails and both metals sink!'
+        ],
+        whyItWorks: 'It visualizes Differential Flotation, a common JAM topic. It turns dry formulas into "equipment" you use to succeed.'
+      },
+      gamer: {
+        id: 'sulfide-sky-high',
+        title: '"Sulfide Sky-High"',
+        targetAudience: 'For Gamers',
+        goal: 'Build a mining empire using "Antigravity" tech to harvest floating ores.',
+        interfaceDesc: 'A 3D isometric mining colony on a resource-rich planet.',
+        gameplay: [
+          'Resource Management: You have a limited supply of "Antigravity Fuel" (Air/Compressed Gas). You have to pulse the air into massive "Flotation Cells."',
+          'The "Scrape" Mechanic: As the sulfide-rich froth reaches the top, you have to manually "scrape" the concentrated ore into bins before the bubbles pop. If they pop, the ore falls back down, damaging your machinery.',
+          'Level Up: As you progress, you unlock Roasting and Smelting modules to turn your concentrated froth into pure gold, copper, and lead bars to sell on the Galactic Market.'
+        ],
+        hook: 'High-intensity "Emergency Events" where a surge of "Acid Rain" changes the pH of your tanks, forcing you to react instantly to keep your ore floating.'
+      }
+    }
+  }
+];
+
 export interface Resource {
   id: string;
   title: string;

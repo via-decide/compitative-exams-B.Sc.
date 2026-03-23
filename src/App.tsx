@@ -18,7 +18,14 @@ import {
   AlertCircle,
   Menu,
   X,
-  GraduationCap
+  GraduationCap,
+  Gamepad2,
+  FlaskConical,
+  ArrowLeft,
+  Beaker,
+  Pickaxe,
+  Wind,
+  Droplets
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -33,9 +40,9 @@ import {
   Area
 } from 'recharts';
 import { cn } from './lib/utils';
-import { CHEMISTRY_RESOURCES, SAMPLE_QUIZ, IIT_JAM_QUIZ, type Resource, type QuizQuestion } from './constants';
+import { CHEMISTRY_RESOURCES, SAMPLE_QUIZ, IIT_JAM_QUIZ, LORE_MISSIONS, type Resource, type QuizQuestion, type LoreMission, type LoreMode } from './constants';
 
-type Tab = 'dashboard' | 'vault' | 'test' | 'settings';
+type Tab = 'dashboard' | 'vault' | 'test' | 'lore' | 'settings';
 
 const progressData = [
   { name: 'Mon', score: 45 },
@@ -47,12 +54,159 @@ const progressData = [
   { name: 'Sun', score: 72 },
 ];
 
+const JamMasterSim = () => {
+  const [reagent, setReagent] = useState<string | null>(null);
+  const [ph, setPh] = useState(7);
+  const [status, setStatus] = useState<'idle' | 'success' | 'fail'>('idle');
+
+  const runSim = () => {
+    if (reagent === 'Potassium Ethyl Xanthate' && ph >= 8 && ph <= 10) {
+      setStatus('success');
+    } else {
+      setStatus('fail');
+    }
+  };
+
+  return (
+    <div className="w-full max-w-lg bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-700 space-y-6">
+      <div className="space-y-3">
+        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">1. Select Reagent</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {['Potassium Ethyl Xanthate', 'Pine Oil', 'Aniline', 'Water'].map(r => (
+            <button 
+              key={r}
+              onClick={() => { setReagent(r); setStatus('idle'); }}
+              className={cn(
+                "p-3 text-sm font-medium rounded-xl border transition-all text-left",
+                reagent === r ? "bg-emerald-500/20 border-emerald-500 text-emerald-400" : "bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500"
+              )}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex justify-between items-center gap-2">
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">2. Adjust pH (NaCN Depressant)</label>
+          <span className="text-emerald-400 font-mono font-bold">{ph.toFixed(1)}</span>
+        </div>
+        <input 
+          type="range" 
+          min="1" max="14" step="0.5" 
+          value={ph} 
+          onChange={e => { setPh(parseFloat(e.target.value)); setStatus('idle'); }}
+          className="w-full accent-emerald-500"
+        />
+        <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+          <span>Acidic</span>
+          <span>Neutral</span>
+          <span>Basic</span>
+        </div>
+      </div>
+
+      <button 
+        onClick={runSim}
+        disabled={!reagent}
+        className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all"
+      >
+        Run Flotation Sequence
+      </button>
+
+      {status !== 'idle' && (
+        <div className={cn(
+          "p-4 rounded-xl border text-sm font-medium",
+          status === 'success' ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+        )}>
+          {status === 'success' 
+            ? "Success! The Xanthate collector cloaked the PbS, and the basic pH (8-10) with NaCN successfully depressed the ZnS. Differential flotation achieved!" 
+            : "Failure! The ore sank. Ensure you use the correct collector and maintain a slightly basic pH for NaCN to act as a depressant."}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const SulfideSkyHighSim = () => {
+  const [fuel, setFuel] = useState(100);
+  const [froth, setFroth] = useState(0);
+  const [bars, setBars] = useState(0);
+  const [event, setEvent] = useState<string | null>(null);
+
+  const pulse = () => {
+    if (fuel >= 10) {
+      setFuel(f => f - 10);
+      setFroth(f => Math.min(100, f + 25));
+      if (Math.random() > 0.8) setEvent('Acid Rain! pH dropping!');
+      else setEvent(null);
+    }
+  };
+
+  const scrape = () => {
+    if (froth > 0) {
+      setBars(b => b + Math.floor(froth / 20));
+      setFroth(0);
+      setEvent('Scraped successfully! +Bars');
+    }
+  };
+
+  return (
+    <div className="w-full max-w-lg bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-700 space-y-6">
+      <div className="flex justify-between items-center gap-2 bg-slate-900 p-4 rounded-xl border border-slate-700">
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Fuel</p>
+          <p className="text-xl font-mono font-bold text-cyan-400">{fuel}%</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Froth Level</p>
+          <p className="text-xl font-mono font-bold text-amber-400">{froth}%</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Metal Bars</p>
+          <p className="text-xl font-mono font-bold text-yellow-400">{bars}</p>
+        </div>
+      </div>
+
+      {event && (
+        <div className={cn(
+          "p-3 rounded-xl text-xs font-bold text-center border",
+          event.includes('Acid') ? "bg-rose-500/20 border-rose-500/50 text-rose-400 animate-pulse" : "bg-emerald-500/20 border-emerald-500/50 text-emerald-400"
+        )}>
+          {event}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button 
+          onClick={pulse}
+          disabled={fuel < 10}
+          className="py-4 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold rounded-xl flex flex-col items-center gap-2 transition-all active:scale-95"
+        >
+          <Wind size={24} />
+          Pulse Air (-10 Fuel)
+        </button>
+        <button 
+          onClick={scrape}
+          disabled={froth === 0}
+          className="py-4 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold rounded-xl flex flex-col items-center gap-2 transition-all active:scale-95"
+        >
+          <Pickaxe size={24} />
+          Scrape Froth
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+  const [selectedLoreId, setSelectedLoreId] = useState<string | null>(null);
+  const [selectedLoreMode, setSelectedLoreMode] = useState<'learner' | 'gamer' | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -203,6 +357,13 @@ export default function App() {
             label="Test Center" 
             active={activeTab === 'test'} 
             onClick={() => handleTabChange('test')}
+            collapsed={!isSidebarOpen}
+          />
+          <SidebarItem 
+            icon={<Gamepad2 size={20} />} 
+            label="Lore Labs" 
+            active={activeTab === 'lore'} 
+            onClick={() => handleTabChange('lore')}
             collapsed={!isSidebarOpen}
           />
           <SidebarItem 
@@ -705,6 +866,187 @@ export default function App() {
                         <ChevronRight size={20} />
                       </button>
                     </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'lore' && (
+              <motion.div 
+                key="lore"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="h-full flex flex-col"
+              >
+                {!selectedLoreId ? (
+                  <div className="space-y-8">
+                    <div className="space-y-2">
+                      <h2 className="text-3xl font-bold text-slate-800">Lore Labs</h2>
+                      <p className="text-slate-500">Immersive story-driven chemistry simulations.</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {LORE_MISSIONS.map(mission => (
+                        <div 
+                          key={mission.id} 
+                          onClick={() => setSelectedLoreId(mission.id)}
+                          className="bg-white p-6 rounded-3xl border-2 border-slate-100 hover:border-emerald-500 transition-all cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-1 group"
+                        >
+                          <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <FlaskConical size={24} />
+                          </div>
+                          <h3 className="text-xl font-bold text-slate-800 mb-2">{mission.title}</h3>
+                          <p className="text-sm font-bold text-emerald-600 mb-3 uppercase tracking-wider">{mission.topic}</p>
+                          <p className="text-sm text-slate-500 line-clamp-3">{mission.loreText}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : !selectedLoreMode ? (
+                  <div className="space-y-8 pb-12">
+                    <button 
+                      onClick={() => setSelectedLoreId(null)}
+                      className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors font-medium"
+                    >
+                      <ArrowLeft size={16} /> Back to Missions
+                    </button>
+                    
+                    {LORE_MISSIONS.filter(m => m.id === selectedLoreId).map(mission => (
+                      <div key={mission.id} className="space-y-8">
+                        <div className="bg-slate-900 text-slate-300 p-8 md:p-12 rounded-3xl shadow-xl relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                          <div className="relative z-10 space-y-4">
+                            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">{mission.title}</h2>
+                            <p className="text-emerald-400 font-bold tracking-widest uppercase text-sm">{mission.topic}</p>
+                            <div className="h-px w-12 bg-slate-700 my-6" />
+                            <p className="text-lg leading-relaxed text-slate-300">{mission.loreText}</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <h3 className="text-xl font-bold text-slate-800">Select Simulation Mode</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <button 
+                              onClick={() => setSelectedLoreMode('learner')}
+                              className="bg-white p-8 rounded-3xl border-2 border-slate-100 hover:border-emerald-500 transition-all text-left shadow-sm hover:shadow-xl group"
+                            >
+                              <div className="flex items-center justify-between mb-6">
+                                <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                  <Beaker size={28} />
+                                </div>
+                                <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider rounded-full">Learner</span>
+                              </div>
+                              <h4 className="text-2xl font-bold text-slate-800 mb-2">{mission.modes.learner.title}</h4>
+                              <p className="text-slate-500 mb-6">{mission.modes.learner.goal}</p>
+                              <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm group-hover:translate-x-1 transition-transform">
+                                Launch Simulation <ChevronRight size={16} />
+                              </div>
+                            </button>
+
+                            <button 
+                              onClick={() => setSelectedLoreMode('gamer')}
+                              className="bg-white p-8 rounded-3xl border-2 border-slate-100 hover:border-indigo-500 transition-all text-left shadow-sm hover:shadow-xl group"
+                            >
+                              <div className="flex items-center justify-between mb-6">
+                                <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                  <Pickaxe size={28} />
+                                </div>
+                                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wider rounded-full">Gamer</span>
+                              </div>
+                              <h4 className="text-2xl font-bold text-slate-800 mb-2">{mission.modes.gamer.title}</h4>
+                              <p className="text-slate-500 mb-6">{mission.modes.gamer.goal}</p>
+                              <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm group-hover:translate-x-1 transition-transform">
+                                Launch Simulation <ChevronRight size={16} />
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="h-full flex flex-col">
+                    <button 
+                      onClick={() => setSelectedLoreMode(null)}
+                      className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors font-medium mb-6 shrink-0"
+                    >
+                      <ArrowLeft size={16} /> Back to Mode Selection
+                    </button>
+                    
+                    {LORE_MISSIONS.filter(m => m.id === selectedLoreId).map(mission => {
+                      const mode = selectedLoreMode === 'learner' ? mission.modes.learner : mission.modes.gamer;
+                      return (
+                        <div key={mode.id} className="flex-1 flex flex-col xl:flex-row gap-8 overflow-y-auto xl:overflow-hidden pb-8 xl:pb-0">
+                          {/* Left Panel: Briefing */}
+                          <div className="w-full xl:w-1/3 flex flex-col gap-6 xl:overflow-y-auto pr-2 xl:pb-8 shrink-0 xl:shrink">
+                            <div className="space-y-2">
+                              <span className={cn(
+                                "px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full",
+                                selectedLoreMode === 'learner' ? "bg-emerald-100 text-emerald-700" : "bg-indigo-100 text-indigo-700"
+                              )}>
+                                {mode.targetAudience}
+                              </span>
+                              <h2 className="text-3xl font-black text-slate-800 tracking-tight">{mode.title}</h2>
+                            </div>
+                            
+                            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                              <div>
+                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Goal</h4>
+                                <p className="text-slate-700 font-medium">{mode.goal}</p>
+                              </div>
+                              <div className="h-px bg-slate-100" />
+                              <div>
+                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Interface</h4>
+                                <p className="text-slate-600 text-sm">{mode.interfaceDesc}</p>
+                              </div>
+                            </div>
+
+                            <div className="space-y-3">
+                              <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Gameplay Mechanics</h4>
+                              {mode.gameplay.map((step, i) => (
+                                <div key={i} className="flex gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                  <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0">
+                                    {i + 1}
+                                  </div>
+                                  <p className="text-sm text-slate-700 leading-relaxed">{step}</p>
+                                </div>
+                              ))}
+                            </div>
+
+                            {mode.whyItWorks && (
+                              <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                <h4 className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1">Why It Works</h4>
+                                <p className="text-sm text-emerald-800">{mode.whyItWorks}</p>
+                              </div>
+                            )}
+
+                            {mode.hook && (
+                              <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                                <h4 className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-1">The Hook</h4>
+                                <p className="text-sm text-amber-800">{mode.hook}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Right Panel: Interactive Sim Placeholder */}
+                          <div className="flex-1 bg-slate-900 rounded-3xl overflow-hidden relative shadow-2xl flex flex-col border border-slate-800 min-h-[500px] xl:min-h-0 shrink-0 xl:shrink">
+                            <div className="h-12 bg-slate-950 border-b border-slate-800 flex items-center px-4 gap-2 shrink-0">
+                              <div className="w-3 h-3 rounded-full bg-rose-500 shrink-0" />
+                              <div className="w-3 h-3 rounded-full bg-amber-500 shrink-0" />
+                              <div className="w-3 h-3 rounded-full bg-emerald-500 shrink-0" />
+                              <span className="ml-2 sm:ml-4 text-xs font-mono text-slate-500 truncate">{mode.interfaceDesc}</span>
+                            </div>
+                            <div className="flex-1 flex items-center justify-center p-4 sm:p-8 relative overflow-y-auto">
+                              <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
+                              
+                              <div className="relative z-10 w-full flex justify-center">
+                                {selectedLoreMode === 'learner' ? <JamMasterSim /> : <SulfideSkyHighSim />}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </motion.div>
