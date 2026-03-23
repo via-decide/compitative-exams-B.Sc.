@@ -49,20 +49,19 @@ const progressData = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 1024);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setIsSidebarOpen(true);
-      } else {
-        setIsSidebarOpen(false);
-      }
+      const nextIsDesktop = window.innerWidth >= 1024;
+      setIsDesktop(nextIsDesktop);
+      setIsSidebarOpen(nextIsDesktop);
     };
-    
-    handleResize(); // Set initial state
+
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -104,7 +103,7 @@ export default function App() {
     <div className="flex h-screen bg-[#F8FAFC] text-slate-900 font-sans overflow-hidden relative">
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
-        {isSidebarOpen && window.innerWidth < 1024 && (
+        {isSidebarOpen && !isDesktop && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -119,8 +118,8 @@ export default function App() {
       <motion.aside 
         initial={false}
         animate={{ 
-          width: isSidebarOpen ? 260 : (window.innerWidth < 1024 ? 0 : 80),
-          x: (window.innerWidth < 1024 && !isSidebarOpen) ? -260 : 0
+          width: isSidebarOpen ? 260 : (isDesktop ? 80 : 0),
+          x: (!isDesktop && !isSidebarOpen) ? -260 : 0
         }}
         className={cn(
           "bg-white border-r border-slate-200 flex flex-col z-40 h-full transition-all duration-300 ease-in-out",
@@ -132,7 +131,7 @@ export default function App() {
             <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 shrink-0">
               <GraduationCap size={24} />
             </div>
-            {(isSidebarOpen || window.innerWidth >= 1024) && (
+            {(isSidebarOpen || isDesktop) && (
               <motion.span 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: isSidebarOpen ? 1 : 0 }}
@@ -142,7 +141,7 @@ export default function App() {
               </motion.span>
             )}
           </div>
-          {window.innerWidth < 1024 && isSidebarOpen && (
+          {!isDesktop && isSidebarOpen && (
             <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 text-slate-400 hover:text-slate-600">
               <X size={20} />
             </button>
