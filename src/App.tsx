@@ -307,13 +307,38 @@ export default function App() {
     setUserAnswers(newAnswers);
   };
 
-  const nextQuestion = () => {
-    if (currentQuestionIndex < activeQuiz.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+  const handleNextOrSkip = (isSkip: boolean) => {
+    let nextIndex = -1;
+    
+    // Check questions after the current one
+    for (let i = currentQuestionIndex + 1; i < activeQuiz.length; i++) {
+      if (userAnswers[i] === undefined) {
+        nextIndex = i;
+        break;
+      }
+    }
+    
+    // If none found, wrap around to the beginning
+    if (nextIndex === -1) {
+      for (let i = 0; i < currentQuestionIndex; i++) {
+        if (userAnswers[i] === undefined) {
+          nextIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (nextIndex !== -1) {
+      setCurrentQuestionIndex(nextIndex);
     } else {
-      setQuizFinished(true);
+      if (!isSkip) {
+        setQuizFinished(true);
+      }
     }
   };
+
+  const nextQuestion = () => handleNextOrSkip(false);
+  const skipQuestion = () => handleNextOrSkip(true);
 
   const calculateScore = () => {
     let correct = 0;
@@ -1005,13 +1030,26 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="mt-12 flex justify-end">
+                    <div className="mt-12 flex justify-between items-center">
+                      <button 
+                        onClick={skipQuestion}
+                        disabled={userAnswers[currentQuestionIndex] !== undefined}
+                        className={cn(
+                          "px-8 py-4 rounded-full font-bold transition-all flex items-center gap-2",
+                          userAnswers[currentQuestionIndex] !== undefined 
+                            ? "opacity-0 pointer-events-none" 
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        )}
+                      >
+                        Skip Question
+                      </button>
+                      
                       <button 
                         onClick={nextQuestion}
                         disabled={userAnswers[currentQuestionIndex] === undefined}
                         className="px-10 py-4 bg-slate-900 text-white rounded-full font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-black transition-all flex items-center gap-2"
                       >
-                        {currentQuestionIndex === activeQuiz.length - 1 ? 'Finish Test' : 'Next Question'}
+                        {activeQuiz.filter((_, idx) => userAnswers[idx] === undefined).length === 0 ? 'Finish Test' : 'Next Question'}
                         <ChevronRight size={20} />
                       </button>
                     </div>
