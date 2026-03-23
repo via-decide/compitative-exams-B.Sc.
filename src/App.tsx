@@ -47,23 +47,22 @@ const progressData = [
   { name: 'Sun', score: 72 },
 ];
 
-const APP_NAME = 'compitative-exams-B.Sc.';
-
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
-  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 1024);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
-      const nextIsDesktop = window.innerWidth >= 1024;
-      setIsDesktop(nextIsDesktop);
-      setIsSidebarOpen(nextIsDesktop);
+      if (window.innerWidth >= 1024) {
+        setIsSidebarOpen(true);
+      } else {
+        setIsSidebarOpen(false);
+      }
     };
-
-    handleResize();
+    
+    handleResize(); // Set initial state
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -73,6 +72,13 @@ export default function App() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<number[]>([]);
   const [quizFinished, setQuizFinished] = useState(false);
+
+  const handleTabChange = (tab: Tab) => {
+    setActiveTab(tab);
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  };
 
   const filteredResources = CHEMISTRY_RESOURCES.filter(r => 
     r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -105,7 +111,7 @@ export default function App() {
     <div className="flex h-screen bg-[#F8FAFC] text-slate-900 font-sans overflow-hidden relative">
       {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
-        {isSidebarOpen && !isDesktop && (
+        {isSidebarOpen && window.innerWidth < 1024 && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -120,8 +126,8 @@ export default function App() {
       <motion.aside 
         initial={false}
         animate={{ 
-          width: isSidebarOpen ? 260 : (isDesktop ? 80 : 0),
-          x: (!isDesktop && !isSidebarOpen) ? -260 : 0
+          width: isSidebarOpen ? 260 : (window.innerWidth < 1024 ? 0 : 80),
+          x: (window.innerWidth < 1024 && !isSidebarOpen) ? -260 : 0
         }}
         className={cn(
           "bg-white border-r border-slate-200 flex flex-col z-40 h-full transition-all duration-300 ease-in-out",
@@ -133,19 +139,17 @@ export default function App() {
             <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200 shrink-0">
               <GraduationCap size={24} />
             </div>
-            {(isSidebarOpen || isDesktop) && (
-              <motion.div 
+            {(isSidebarOpen || window.innerWidth >= 1024) && (
               <motion.span 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: isSidebarOpen ? 1 : 0 }}
-                className="min-w-0"
+                className="font-bold text-xl tracking-tight text-slate-800 whitespace-nowrap"
               >
-                <p className="font-bold text-sm tracking-tight text-slate-800 truncate">{APP_NAME}</p>
-                <p className="text-xs text-slate-500 truncate">Chemistry Prep</p>
-              </motion.div>
+                StudyOS
+              </motion.span>
             )}
           </div>
-          {!isDesktop && isSidebarOpen && (
+          {window.innerWidth < 1024 && isSidebarOpen && (
             <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 text-slate-400 hover:text-slate-600">
               <X size={20} />
             </button>
@@ -157,28 +161,28 @@ export default function App() {
             icon={<LayoutDashboard size={20} />} 
             label="Dashboard" 
             active={activeTab === 'dashboard'} 
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => handleTabChange('dashboard')}
             collapsed={!isSidebarOpen}
           />
           <SidebarItem 
             icon={<BookOpen size={20} />} 
             label="Vault" 
             active={activeTab === 'vault'} 
-            onClick={() => setActiveTab('vault')}
+            onClick={() => handleTabChange('vault')}
             collapsed={!isSidebarOpen}
           />
           <SidebarItem 
             icon={<Trophy size={20} />} 
             label="Test Center" 
             active={activeTab === 'test'} 
-            onClick={() => setActiveTab('test')}
+            onClick={() => handleTabChange('test')}
             collapsed={!isSidebarOpen}
           />
           <SidebarItem 
             icon={<Settings size={20} />} 
             label="Settings" 
             active={activeTab === 'settings'} 
-            onClick={() => setActiveTab('settings')}
+            onClick={() => handleTabChange('settings')}
             collapsed={!isSidebarOpen}
           />
         </nav>
@@ -217,8 +221,8 @@ export default function App() {
           </div>
           <div className="flex items-center gap-3 ml-4">
             <div className="hidden sm:flex flex-col items-end">
-              <span className="text-xs font-semibold text-slate-700">{APP_NAME}</span>
-              <span className="text-[10px] text-slate-500">Chemistry Prep</span>
+              <span className="text-xs font-semibold text-slate-700">Chemistry Prep</span>
+              <span className="text-[10px] text-slate-500">GATE / JAM</span>
             </div>
             <div className="w-8 h-8 rounded-full bg-slate-200 border border-white shadow-sm overflow-hidden shrink-0">
               <img src="https://picsum.photos/seed/student/100/100" alt="Avatar" referrerPolicy="no-referrer" />
@@ -562,6 +566,73 @@ export default function App() {
                     </div>
                   </div>
                 )}
+              </motion.div>
+            )}
+
+            {activeTab === 'settings' && (
+              <motion.div 
+                key="settings"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="max-w-2xl mx-auto space-y-8"
+              >
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-bold text-slate-800">Settings</h2>
+                  <p className="text-slate-500">Manage your study preferences and account.</p>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                  <div className="p-6 border-b border-slate-100">
+                    <h3 className="font-bold text-slate-800">Study Preferences</h3>
+                  </div>
+                  <div className="p-6 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-sm">Exam Focus</p>
+                        <p className="text-xs text-slate-500">Select which exams you are preparing for.</p>
+                      </div>
+                      <select className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                        <option>GATE Chemistry</option>
+                        <option>IIT JAM Chemistry</option>
+                        <option>TIFR GS Chemistry</option>
+                        <option>All Combined</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-sm">Daily Goal</p>
+                        <p className="text-xs text-slate-500">Set your target study hours per day.</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input type="number" defaultValue={4} className="w-16 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-center" />
+                        <span className="text-xs text-slate-500 font-medium">hours</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                  <div className="p-6 border-b border-slate-100">
+                    <h3 className="font-bold text-slate-800">Notifications</h3>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    <label className="flex items-center justify-between cursor-pointer group">
+                      <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">Study Reminders</span>
+                      <div className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" defaultChecked className="sr-only peer" />
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                      </div>
+                    </label>
+                    <label className="flex items-center justify-between cursor-pointer group">
+                      <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">New Paper Alerts</span>
+                      <div className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" defaultChecked className="sr-only peer" />
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
