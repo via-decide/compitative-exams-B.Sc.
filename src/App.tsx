@@ -493,45 +493,98 @@ export default function App() {
                     </div>
                   </div>
                 ) : quizFinished ? (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center space-y-8">
-                    <div className="relative">
-                      <div className="w-32 h-32 rounded-full border-8 border-emerald-100 flex items-center justify-center">
-                        <span className="text-4xl font-black text-emerald-600">{calculateScore()}%</span>
+                  <div className="flex-1 flex flex-col items-center py-8 space-y-8 overflow-y-auto pr-2">
+                    <div className="flex flex-col items-center text-center space-y-6">
+                      <div className="relative">
+                        <div className="w-32 h-32 rounded-full border-8 border-emerald-100 flex items-center justify-center bg-white shadow-inner">
+                          <span className="text-4xl font-black text-emerald-600">{calculateScore()}%</span>
+                        </div>
+                        <motion.div 
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="absolute -top-2 -right-2 bg-emerald-500 text-white p-2 rounded-full shadow-lg"
+                        >
+                          <Trophy size={20} />
+                        </motion.div>
                       </div>
-                      <motion.div 
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-2 -right-2 bg-emerald-500 text-white p-2 rounded-full shadow-lg"
-                      >
-                        <CheckCircle2 size={24} />
-                      </motion.div>
+                      <div className="space-y-2">
+                        <h2 className="text-3xl font-bold text-slate-800 tracking-tight">Assessment Report</h2>
+                        <p className="text-slate-500">You've successfully completed the session.</p>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <h2 className="text-3xl font-bold text-slate-800">Test Completed!</h2>
-                      <p className="text-slate-500">Great job! You've completed the assessment.</p>
+
+                    {/* Summary Stats */}
+                    <div className="grid grid-cols-3 gap-4 w-full max-w-md">
+                      <div className="bg-white p-4 rounded-2xl border border-slate-100 text-center shadow-sm">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total</p>
+                        <p className="text-2xl font-black text-slate-800">{activeQuiz.length}</p>
+                      </div>
+                      <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 text-center shadow-sm">
+                        <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-1">Correct</p>
+                        <p className="text-2xl font-black text-emerald-700">
+                          {userAnswers.filter((ans, idx) => ans === activeQuiz[idx].correctAnswer).length}
+                        </p>
+                      </div>
+                      <div className="bg-rose-50 p-4 rounded-2xl border border-rose-100 text-center shadow-sm">
+                        <p className="text-xs font-bold text-rose-600 uppercase tracking-widest mb-1">Wrong</p>
+                        <p className="text-2xl font-black text-rose-700">
+                          {userAnswers.filter((ans, idx) => ans !== activeQuiz[idx].correctAnswer).length}
+                        </p>
+                      </div>
                     </div>
-                    <div className="w-full max-w-md space-y-4">
+
+                    <div className="w-full max-w-2xl space-y-4">
+                      <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest px-2">Detailed Review</h3>
                       {activeQuiz.map((q, idx) => (
-                        <div key={q.id} className="bg-white p-4 rounded-2xl border border-slate-200 text-left">
-                          <div className="flex items-start gap-3">
-                            {userAnswers[idx] === q.correctAnswer ? (
-                              <CheckCircle2 className="text-emerald-500 mt-1 shrink-0" size={18} />
-                            ) : (
-                              <AlertCircle className="text-rose-500 mt-1 shrink-0" size={18} />
-                            )}
-                            <div>
-                              <p className="text-sm font-semibold text-slate-800">{q.text}</p>
-                              <p className="text-xs text-slate-500 mt-1 italic">{q.explanation}</p>
+                        <div key={q.id} className={cn(
+                          "bg-white p-6 rounded-3xl border-2 transition-all shadow-sm",
+                          userAnswers[idx] === q.correctAnswer ? "border-emerald-100" : "border-rose-100"
+                        )}>
+                          <div className="flex items-start gap-4">
+                            <div className={cn(
+                              "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1",
+                              userAnswers[idx] === q.correctAnswer ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"
+                            )}>
+                              {userAnswers[idx] === q.correctAnswer ? <CheckCircle2 size={18} /> : <X size={18} />}
+                            </div>
+                            <div className="space-y-4 flex-1">
+                              <p className="font-bold text-slate-800 leading-snug">{q.text}</p>
+                              
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className={cn(
+                                  "p-3 rounded-xl text-xs",
+                                  userAnswers[idx] === q.correctAnswer ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-rose-50 text-rose-700 border border-rose-100"
+                                )}>
+                                  <span className="font-bold block mb-1 uppercase tracking-tighter opacity-60">Your Answer</span>
+                                  {q.options[userAnswers[idx]]}
+                                </div>
+                                {userAnswers[idx] !== q.correctAnswer && (
+                                  <div className="p-3 rounded-xl text-xs bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                    <span className="font-bold block mb-1 uppercase tracking-tighter opacity-60">Correct Answer</span>
+                                    {q.options[q.correctAnswer]}
+                                  </div>
+                                )}
+                              </div>
+
+                              {q.explanation && (
+                                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                  <p className="text-xs text-slate-500 italic leading-relaxed">
+                                    <span className="font-bold text-slate-700 not-italic mr-1">Explanation:</span>
+                                    {q.explanation}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
+
                     <button 
                       onClick={() => { setQuizFinished(false); setQuizStarted(false); setCurrentQuestionIndex(0); setUserAnswers([]); }}
-                      className="px-8 py-3 bg-slate-800 text-white rounded-full font-bold hover:bg-slate-900 transition-all"
+                      className="px-12 py-4 bg-slate-900 text-white rounded-full font-bold shadow-xl shadow-slate-200 hover:bg-black transition-all active:scale-95"
                     >
-                      Back to Center
+                      Return to Test Center
                     </button>
                   </div>
                 ) : (
