@@ -29,7 +29,8 @@ import {
   Atom,
   Zap,
   Activity,
-  Timer
+  Timer,
+  Database
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -1240,11 +1241,11 @@ export default function App() {
                               resource.category === 'JAM' ? "bg-emerald-100 text-emerald-600" :
                               "bg-purple-100 text-purple-600"
                             )}>
-                              <FileText size={18} />
+                              {resource.type === 'Repository' ? <Database size={18} /> : <FileText size={18} />}
                             </div>
                             <div>
                               <p className="font-semibold text-sm">{resource.title}</p>
-                              <p className="text-xs text-slate-500">{resource.category} • {resource.year}</p>
+                              <p className="text-xs text-slate-500">{resource.category} • {resource.year === 0 ? 'Archive' : resource.year}</p>
                             </div>
                           </div>
                           <button 
@@ -1393,11 +1394,11 @@ export default function App() {
                           )}>
                             {resource.category}
                           </span>
-                          <span className="text-xs text-slate-400">{resource.year}</span>
+                          <span className="text-xs text-slate-400">{resource.year === 0 ? 'Archive' : resource.year}</span>
                         </div>
                         <p className="font-bold text-slate-800 leading-tight">{resource.title}</p>
                         <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
-                          <FileText size={14} />
+                          {resource.type === 'Repository' ? <Database size={14} /> : <FileText size={14} />}
                           <span>{resource.type}</span>
                         </div>
                       </button>
@@ -1427,34 +1428,14 @@ export default function App() {
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 hover:text-emerald-700 shrink-0"
                           >
-                            <span className="hidden sm:inline">{selectedResource.type === 'Repository' ? selectedResource.title : 'Open in New Tab'}</span> <ExternalLink size={14} />
+                            <span className="hidden sm:inline">Open in New Tab</span> <ExternalLink size={14} />
                           </a>
                         </div>
-                        {selectedResource.type === 'Repository' ? (
-                          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-white">
-                            <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4">
-                              <ExternalLink size={32} />
-                            </div>
-                            <h4 className="text-lg font-bold text-slate-800 mb-2">External Repository</h4>
-                            <p className="text-sm text-slate-500 max-w-xs mb-6">
-                              This resource is an external repository and cannot be viewed directly inside the app.
-                            </p>
-                            <a 
-                              href={selectedResource.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="px-6 py-2.5 bg-emerald-600 text-white rounded-full font-bold text-sm shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all"
-                            >
-                              {selectedResource.title}
-                            </a>
-                          </div>
-                        ) : (
-                          <iframe 
-                            src={selectedResource.url} 
-                            className="w-full flex-1"
-                            title="PDF Viewer"
-                          />
-                        )}
+                        <iframe 
+                          src={selectedResource.url} 
+                          className="w-full flex-1"
+                          title="Resource Viewer"
+                        />
                       </>
                     ) : (
                       <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-4 p-12 text-center">
