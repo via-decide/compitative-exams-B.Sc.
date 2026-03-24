@@ -391,5 +391,65 @@ export const IIT_JAM_QUIZ: QuizQuestion[] = [
     ],
     correctAnswer: 2,
     explanation: 'Xe has 8 valence electrons. In XeF4, there are 4 bond pairs and 2 lone pairs, giving a steric number of 6, which corresponds to sp3d2 hybridization (square planar geometry).'
+  },
+  {
+    id: 'jam-6',
+    text: 'In the concentration of an ore containing a mixture of Galena (PbS) and Sphalerite (ZnS), which reagent is added as a depressant to allow only PbS to come with the froth?',
+    options: [
+      'Pine Oil',
+      'Potassium Ethyl Xanthate',
+      'Sodium Cyanide (NaCN)',
+      'Copper Sulphate (CuSO₄)'
+    ],
+    correctAnswer: 2,
+    explanation: 'Think of NaCN as a "Stun Grenade" for Zinc. It forms a soluble complex [Zn(CN)₄]²⁻ that keeps the Zinc trapped in the water (the "Dead Zone"), while Lead escapes to the surface!'
+  },
+  {
+    id: 'jam-7',
+    text: 'The role of a collector in froth flotation is to:',
+    options: [
+      'Increase the solubility of the ore in water.',
+      'Make the ore particles hydrophobic (water-repelling).',
+      'Decrease the surface tension of the water.',
+      'Stabilize the size of the air bubbles.'
+    ],
+    correctAnswer: 1,
+    explanation: 'Your "Collector" is like a Magnet-Suit. One end sticks to the metal, and the other end hates water. This forces the particle to jump onto an air bubble to stay "dry"!'
+  },
+  {
+    id: 'jam-8',
+    text: 'During the extraction of Copper from Copper Pyrites, the reaction Cu₂S + 2Cu₂O → 6Cu + SO₂ is an example of:',
+    options: [
+      'Roasting',
+      'Calcination',
+      'Self-Reduction',
+      'Electrolytic Reduction'
+    ],
+    correctAnswer: 2,
+    explanation: 'This is the "Betrayal Mechanic." The sulfide ore and the oxide ore react with each other to produce pure metal without needing any external carbon or "fuel." They reduce themselves!'
+  },
+  {
+    id: 'jam-9',
+    text: 'Why are sulfide ores converted to oxides (Roasting) before reduction with Carbon?',
+    options: [
+      'Carbon is a better reducing agent for sulfides than oxides.',
+      'ΔG°f of CO₂ is more negative than CS₂.',
+      'Sulfides are more volatile than oxides.',
+      'Roasting increases the density of the ore.'
+    ],
+    correctAnswer: 1,
+    explanation: 'In the "Industrial Tycoon" view, Carbon simply isn\'t "strong" enough to steal Sulfur away from a metal. You have to swap the Sulfur for Oxygen first because Carbon loves Oxygen much more!'
+  },
+  {
+    id: 'jam-10',
+    text: 'Which of the following acts as a stabilizer for the froth in flotation?',
+    options: [
+      'Cresols',
+      'Fatty acids',
+      'Pine oil',
+      'Xanthates'
+    ],
+    correctAnswer: 0,
+    explanation: 'If the "Collector" is the suit, the Stabilizer is the "Shield Battery." It keeps the bubbles from popping too early so you have time to scrape the ore off the top!'
   }
 ];

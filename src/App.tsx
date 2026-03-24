@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -235,20 +235,53 @@ const SulfideSkyHighSim = () => {
   const [bars, setBars] = useState(0);
   const [event, setEvent] = useState<string | null>(null);
 
+  const prevFrothRef = useRef(froth);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setFroth(f => Math.max(0, f - 15));
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (prevFrothRef.current > 0 && froth === 0 && !event?.includes('Acid') && !event?.includes('Scraped') && !event?.includes('Restarted')) {
+      setEvent('Bubbles popped! Ore lost!');
+    }
+    prevFrothRef.current = froth;
+  }, [froth, event]);
+
   const pulse = () => {
     if (fuel >= 10) {
       setFuel(f => f - 10);
-      setFroth(f => Math.min(100, f + 25));
-      if (Math.random() > 0.8) setEvent('Acid Rain! pH dropping!');
-      else setEvent(null);
+      let acidRain = Math.random() > 0.8;
+      if (acidRain) {
+        setEvent('Acid Rain! pH dropping! Froth destroyed!');
+        setFroth(0);
+      } else {
+        setFroth(f => Math.min(100, f + 30));
+        setEvent(null);
+      }
     }
   };
 
   const scrape = () => {
-    if (froth > 0) {
-      setBars(b => b + Math.floor(froth / 20));
+    if (froth >= 20) {
+      const earned = Math.floor(froth / 20);
+      setBars(b => b + earned);
       setFroth(0);
-      setEvent('Scraped successfully! +Bars');
+      setEvent(`Scraped successfully! +${earned} Bars`);
+    } else if (froth > 0) {
+      setFroth(0);
+      setEvent('Not enough froth to form a bar! Ore lost.');
+    }
+  };
+
+  const buyFuel = () => {
+    if (bars >= 1) {
+      setBars(b => b - 1);
+      setFuel(f => Math.min(100, f + 50));
+      setEvent('Refueled! (-1 Bar)');
     }
   };
 
@@ -271,8 +304,8 @@ const SulfideSkyHighSim = () => {
 
       {event && (
         <div className={cn(
-          "p-3 rounded-xl text-xs font-bold text-center border",
-          event.includes('Acid') ? "bg-rose-500/20 border-rose-500/50 text-rose-400 animate-pulse" : "bg-emerald-500/20 border-emerald-500/50 text-emerald-400"
+          "p-3 rounded-xl text-xs font-bold text-center border transition-all",
+          event.includes('Acid') || event.includes('popped') ? "bg-rose-500/20 border-rose-500/50 text-rose-400 animate-pulse" : "bg-emerald-500/20 border-emerald-500/50 text-emerald-400"
         )}>
           {event}
         </div>
@@ -289,68 +322,517 @@ const SulfideSkyHighSim = () => {
         </button>
         <button 
           onClick={scrape}
-          disabled={froth === 0}
+          disabled={froth < 20}
           className="py-4 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold rounded-xl flex flex-col items-center gap-2 transition-all active:scale-95"
         >
           <Pickaxe size={24} />
-          Scrape Froth
+          Scrape Froth (Min 20%)
         </button>
       </div>
+      
+      {(fuel < 10 || bars > 0) && (
+        <button 
+          onClick={buyFuel}
+          disabled={bars < 1}
+          className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
+        >
+          Buy Fuel (Cost: 1 Bar)
+        </button>
+      )}
+      
+      {fuel < 10 && bars === 0 && froth === 0 && (
+        <button 
+          onClick={() => { setFuel(100); setFroth(0); setBars(0); setEvent('Simulation Restarted'); }}
+          className="w-full py-4 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl transition-all active:scale-95 mt-2"
+        >
+          Game Over - Restart
+        </button>
+      )}
     </div>
   );
 };
 
-const OrbitalArchitectSim = () => (
-  <div className="w-full max-w-lg bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center space-y-4">
-    <div className="w-16 h-16 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
-      <Atom size={32} />
-    </div>
-    <h3 className="text-xl font-bold text-slate-200">Orbital Architect Simulation</h3>
-    <p className="text-slate-400">Construct molecular orbitals to bypass the security gate.</p>
-    <div className="p-4 bg-slate-900 rounded-xl border border-slate-700 text-sm text-slate-500 font-mono">
-      [Simulation Module Loading...]
-    </div>
-  </div>
-);
+const OrbitalArchitectSim = () => {
+  const [electrons, setElectrons] = useState(0);
+  const [orbitals, setOrbitals] = useState<{name: string, capacity: number, filled: number}[]>([
+    { name: 'σ1s', capacity: 2, filled: 0 },
+    { name: 'σ*1s', capacity: 2, filled: 0 },
+    { name: 'σ2s', capacity: 2, filled: 0 },
+    { name: 'σ*2s', capacity: 2, filled: 0 },
+    { name: 'π2p', capacity: 4, filled: 0 },
+    { name: 'σ2p', capacity: 2, filled: 0 },
+  ]);
+  const [status, setStatus] = useState<'idle' | 'success' | 'fail'>('idle');
 
-const QuantumBreachSim = () => (
-  <div className="w-full max-w-lg bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center space-y-4">
-    <div className="w-16 h-16 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto mb-4">
-      <Zap size={32} />
-    </div>
-    <h3 className="text-xl font-bold text-slate-200">Quantum Breach Simulation</h3>
-    <p className="text-slate-400">Hack the AI core with rapid-fire orbital matching.</p>
-    <div className="p-4 bg-slate-900 rounded-xl border border-slate-700 text-sm text-slate-500 font-mono">
-      [Simulation Module Loading...]
-    </div>
-  </div>
-);
+  const addElectron = (index: number) => {
+    if (electrons >= 14) return; // N2 molecule
+    const newOrbitals = orbitals.map((o, i) => 
+      i === index ? { ...o, filled: o.filled + 1 } : o
+    );
+    if (orbitals[index].filled < orbitals[index].capacity) {
+      setOrbitals(newOrbitals);
+      setElectrons(e => e + 1);
+      setStatus('idle');
+    }
+  };
 
-const KineticsCommanderSim = () => (
-  <div className="w-full max-w-lg bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center space-y-4">
-    <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
-      <Activity size={32} />
-    </div>
-    <h3 className="text-xl font-bold text-slate-200">Kinetics Commander Simulation</h3>
-    <p className="text-slate-400">Design the optimal reaction pathway to synthesize the cure.</p>
-    <div className="p-4 bg-slate-900 rounded-xl border border-slate-700 text-sm text-slate-500 font-mono">
-      [Simulation Module Loading...]
-    </div>
-  </div>
-);
+  const removeElectron = (index: number) => {
+    const newOrbitals = orbitals.map((o, i) => 
+      i === index ? { ...o, filled: o.filled - 1 } : o
+    );
+    if (orbitals[index].filled > 0) {
+      setOrbitals(newOrbitals);
+      setElectrons(e => e - 1);
+      setStatus('idle');
+    }
+  };
 
-const ReactionRushSim = () => (
-  <div className="w-full max-w-lg bg-slate-800 p-8 rounded-2xl border border-slate-700 text-center space-y-4">
-    <div className="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4">
-      <Timer size={32} />
+  const checkConfiguration = () => {
+    // Correct configuration for N2 (14 electrons)
+    const isCorrect = 
+      orbitals[0].filled === 2 &&
+      orbitals[1].filled === 2 &&
+      orbitals[2].filled === 2 &&
+      orbitals[3].filled === 2 &&
+      orbitals[4].filled === 4 &&
+      orbitals[5].filled === 2;
+    
+    if (electrons === 14 && isCorrect) {
+      setStatus('success');
+    } else {
+      setStatus('fail');
+    }
+  };
+
+  return (
+    <div className="w-full max-w-lg bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-700 space-y-6">
+      <div className="flex justify-between items-center gap-2 bg-slate-900 p-4 rounded-xl border border-slate-700">
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Target Molecule</p>
+          <p className="text-xl font-mono font-bold text-indigo-400">N₂</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Electrons Placed</p>
+          <p className="text-xl font-mono font-bold text-cyan-400">{electrons} / 14</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">Construct Molecular Orbitals (Aufbau Principle)</label>
+        <div className="flex flex-col-reverse gap-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
+          {orbitals.map((orbital, idx) => (
+            <div key={orbital.name} className="flex items-center justify-between bg-slate-900 p-2 rounded-lg border border-slate-700">
+              <span className="font-mono text-sm text-slate-300 w-12">{orbital.name}</span>
+              <div className="flex gap-1">
+                {Array.from({ length: orbital.capacity }).map((_, i) => (
+                  <div 
+                    key={i} 
+                    className={cn(
+                      "w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold",
+                      i < orbital.filled ? "bg-indigo-500/20 border-indigo-500 text-indigo-400" : "bg-slate-800 border-slate-600 text-transparent"
+                    )}
+                  >
+                    {i < orbital.filled ? (i % 2 === 0 ? '↑' : '↓') : ''}
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-1">
+                <button 
+                  onClick={() => addElectron(idx)}
+                  disabled={orbital.filled === orbital.capacity || electrons >= 14}
+                  className="w-8 h-8 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 rounded flex items-center justify-center text-emerald-400 font-bold"
+                >
+                  +
+                </button>
+                <button 
+                  onClick={() => removeElectron(idx)}
+                  disabled={orbital.filled === 0}
+                  className="w-8 h-8 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 rounded flex items-center justify-center text-rose-400 font-bold"
+                >
+                  -
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <button 
+        onClick={checkConfiguration}
+        disabled={electrons !== 14}
+        className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all"
+      >
+        Verify Orbital Configuration
+      </button>
+
+      {status !== 'idle' && (
+        <div className={cn(
+          "p-4 rounded-xl border text-sm font-medium",
+          status === 'success' ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+        )}>
+          {status === 'success' 
+            ? "Security Gate Bypassed! The N₂ molecular orbital configuration is stable. HOMO is σ2p and LUMO is π*2p." 
+            : "System Instability Detected! The orbital configuration violates the Aufbau principle or Hund's rule. Try again."}
+        </div>
+      )}
     </div>
-    <h3 className="text-xl font-bold text-slate-200">Reaction Rush Simulation</h3>
-    <p className="text-slate-400">Manage volatile conditions to maximize yield before time runs out.</p>
-    <div className="p-4 bg-slate-900 rounded-xl border border-slate-700 text-sm text-slate-500 font-mono">
-      [Simulation Module Loading...]
+  );
+};
+
+const QuantumBreachSim = () => {
+  const [level, setLevel] = useState(1);
+  const [energy, setEnergy] = useState(100);
+  const [gameState, setGameState] = useState<'idle' | 'playing' | 'won' | 'lost'>('idle');
+  const [event, setEvent] = useState<string | null>(null);
+
+  const targets = [
+    { name: 's orbital', shape: 'Sphere' },
+    { name: 'p orbital', shape: 'Dumbbell' },
+    { name: 'd orbital', shape: 'Double Dumbbell' },
+    { name: 'f orbital', shape: 'Complex Multi-lobe' },
+  ];
+
+  const currentTarget = targets[level - 1];
+
+  const handleGuess = (shape: string) => {
+    if (shape === currentTarget.shape) {
+      if (level === targets.length) {
+        setGameState('won');
+        setEvent('Firewall Bypassed! AI Core accessed.');
+      } else {
+        const newLevel = level + 1;
+        setLevel(newLevel);
+        setEvent(`Level ${newLevel} cleared!`);
+      }
+    } else {
+      const newEnergy = energy - 25;
+      setEnergy(newEnergy);
+      if (newEnergy <= 0) {
+        setGameState('lost');
+        setEvent('System Instability! Energy depleted.');
+      } else {
+        setEvent('Incorrect shape! Energy lost.');
+      }
+    }
+  };
+
+  const startGame = () => {
+    setLevel(1);
+    setEnergy(100);
+    setGameState('playing');
+    setEvent(null);
+  };
+
+  return (
+    <div className="w-full max-w-lg bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-700 space-y-6">
+      <div className="flex justify-between items-center gap-2 bg-slate-900 p-4 rounded-xl border border-slate-700">
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Firewall Level</p>
+          <p className="text-xl font-mono font-bold text-indigo-400">{level} / {targets.length}</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Energy</p>
+          <p className="text-xl font-mono font-bold text-rose-400">{energy}%</p>
+        </div>
+      </div>
+
+      {event && (
+        <div className={cn(
+          "p-3 rounded-xl text-xs font-bold text-center border transition-all",
+          gameState === 'won' ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400" : "bg-rose-500/20 border-rose-500/50 text-rose-400 animate-pulse"
+        )}>
+          {event}
+        </div>
+      )}
+
+      {gameState === 'playing' && (
+        <div className="space-y-4">
+          <div className="text-center p-6 bg-slate-950 rounded-xl border border-slate-800">
+            <p className="text-sm text-slate-400 mb-2">Match the shape for:</p>
+            <p className="text-2xl font-bold text-slate-200">{currentTarget.name}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {['Sphere', 'Dumbbell', 'Double Dumbbell', 'Complex Multi-lobe'].sort(() => Math.random() - 0.5).map(shape => (
+              <button 
+                key={shape}
+                onClick={() => handleGuess(shape)}
+                className="p-4 bg-slate-900 hover:bg-slate-700 text-slate-300 font-bold rounded-xl border border-slate-700 transition-all active:scale-95"
+              >
+                {shape}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {gameState !== 'playing' && (
+        <button 
+          onClick={startGame}
+          className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all active:scale-95"
+        >
+          {gameState === 'idle' ? 'Initiate Hack' : 'Retry Hack'}
+        </button>
+      )}
     </div>
-  </div>
-);
+  );
+};
+
+const KineticsCommanderSim = () => {
+  const [catalyst, setCatalyst] = useState<string | null>(null);
+  const [temp, setTemp] = useState(298);
+  const [status, setStatus] = useState<'idle' | 'success' | 'fail'>('idle');
+
+  const runSim = () => {
+    // Optimal conditions: Pd/C catalyst and Temp between 350K - 400K
+    if (catalyst === 'Palladium on Carbon (Pd/C)' && temp >= 350 && temp <= 400) {
+      setStatus('success');
+    } else {
+      setStatus('fail');
+    }
+  };
+
+  const ea = catalyst === 'Palladium on Carbon (Pd/C)' ? 40 : catalyst === 'Iron (Fe)' ? 70 : catalyst === 'Platinum (Pt)' ? 50 : 100;
+  const rate = Math.exp(-ea / (0.008314 * temp)) * 1e10; // Arbitrary scaling for visual
+
+  return (
+    <div className="w-full max-w-lg bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-700 space-y-6">
+      <div className="flex justify-between items-center gap-2 bg-slate-900 p-4 rounded-xl border border-slate-700">
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Activation Energy (Ea)</p>
+          <p className="text-xl font-mono font-bold text-rose-400">{ea} kJ/mol</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Reaction Rate</p>
+          <p className="text-xl font-mono font-bold text-emerald-400">{rate < 0.01 ? '< 0.01' : rate.toFixed(2)}</p>
+        </div>
+      </div>
+
+      <div className="relative h-40 bg-slate-950 rounded-xl border border-slate-800 p-4 overflow-hidden flex items-end">
+        {/* Reaction Coordinate Diagram */}
+        <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
+          <path 
+            d={`M 0 80 Q 25 80 50 ${100 - ea} T 100 20`} 
+            fill="none" 
+            stroke={catalyst ? "#10b981" : "#f43f5e"} 
+            strokeWidth="4" 
+            className="transition-all duration-500"
+          />
+          <circle cx="0" cy="80" r="4" fill="#94a3b8" />
+          <circle cx="100" cy="20" r="4" fill="#94a3b8" />
+          <text x="0" y="95" fill="#64748b" fontSize="8" fontFamily="monospace">Reactants</text>
+          <text x="80" y="15" fill="#64748b" fontSize="8" fontFamily="monospace">Products</text>
+        </svg>
+      </div>
+
+      <div className="space-y-3">
+        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">1. Select Catalyst</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {['None', 'Iron (Fe)', 'Platinum (Pt)', 'Palladium on Carbon (Pd/C)'].map(c => (
+            <button 
+              key={c}
+              onClick={() => { setCatalyst(c); setStatus('idle'); }}
+              className={cn(
+                "p-3 text-sm font-medium rounded-xl border transition-all text-left",
+                catalyst === c ? "bg-emerald-500/20 border-emerald-500 text-emerald-400" : "bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500"
+              )}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex justify-between items-center gap-2">
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">2. Adjust Temperature (K)</label>
+          <span className="text-amber-400 font-mono font-bold">{temp} K</span>
+        </div>
+        <input 
+          type="range" 
+          min="200" max="600" step="10" 
+          value={temp} 
+          onChange={e => { setTemp(parseInt(e.target.value)); setStatus('idle'); }}
+          className="w-full accent-amber-500"
+        />
+      </div>
+
+      <button 
+        onClick={runSim}
+        disabled={!catalyst}
+        className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all"
+      >
+        Synthesize Cure
+      </button>
+
+      {status !== 'idle' && (
+        <div className={cn(
+          "p-4 rounded-xl border text-sm font-medium",
+          status === 'success' ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+        )}>
+          {status === 'success' 
+            ? "Success! The Pd/C catalyst significantly lowered the activation energy, and the optimal temperature (350-400K) provided enough kinetic energy without denaturing the product." 
+            : "Synthesis Failed! The reaction rate is too slow, or the temperature is too extreme causing side reactions. Check your catalyst and temperature."}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ReactionRushSim = () => {
+  const [time, setTime] = useState(30);
+  const [yieldAmt, setYieldAmt] = useState(0);
+  const [temp, setTemp] = useState(300);
+  const [pressure, setPressure] = useState(1);
+  const [catalystHealth, setCatalystHealth] = useState(100);
+  const [gameState, setGameState] = useState<'idle' | 'playing' | 'won' | 'lost'>('idle');
+  const [event, setEvent] = useState<string | null>(null);
+
+  const tempRef = useRef(temp);
+  const pressureRef = useRef(pressure);
+  const catalystHealthRef = useRef(catalystHealth);
+
+  useEffect(() => {
+    tempRef.current = temp;
+    pressureRef.current = pressure;
+    catalystHealthRef.current = catalystHealth;
+  }, [temp, pressure, catalystHealth]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (gameState === 'playing') {
+      timer = setInterval(() => {
+        setTime(t => {
+          const newTime = t - 1;
+          if (newTime <= 0) {
+            // We can't call setGameState here safely in React 18 without warnings sometimes,
+            // but it's better to do it in a separate effect or just use the newTime.
+            return 0;
+          }
+          return newTime;
+        });
+
+        const currentTemp = tempRef.current;
+        const currentPressure = pressureRef.current;
+        const currentCatalyst = catalystHealthRef.current;
+
+        const isOptimal = currentTemp >= 400 && currentTemp <= 500 && currentPressure >= 2 && currentPressure <= 4 && currentCatalyst > 0;
+        const isDangerous = currentTemp > 550 || currentPressure > 5;
+
+        if (isDangerous) {
+          setGameState('lost');
+          setEvent('EXPLOSION! Conditions were too volatile.');
+        } else if (isOptimal) {
+          setYieldAmt(y => Math.min(100, y + 10));
+          setCatalystHealth(c => Math.max(0, c - 15));
+        } else {
+          setCatalystHealth(c => Math.max(0, c - 5));
+        }
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [gameState]);
+
+  useEffect(() => {
+    if (gameState === 'playing' && time === 0) {
+      setGameState('lost');
+      setEvent('Time ran out!');
+    }
+  }, [time, gameState]);
+
+  useEffect(() => {
+    if (gameState === 'playing' && yieldAmt >= 100) {
+      setGameState('won');
+      setEvent('Synthesis Complete! You saved the colony.');
+    }
+  }, [yieldAmt, gameState]);
+
+  const startGame = () => {
+    setTime(30);
+    setYieldAmt(0);
+    setTemp(300);
+    setPressure(1);
+    setCatalystHealth(100);
+    setGameState('playing');
+    setEvent(null);
+  };
+
+  return (
+    <div className="w-full max-w-lg bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-700 space-y-6">
+      <div className="flex justify-between items-center gap-2 bg-slate-900 p-4 rounded-xl border border-slate-700">
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Time</p>
+          <p className="text-xl font-mono font-bold text-rose-400">{time}s</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Yield</p>
+          <p className="text-xl font-mono font-bold text-emerald-400">{yieldAmt}%</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Catalyst</p>
+          <p className="text-xl font-mono font-bold text-amber-400">{catalystHealth}%</p>
+        </div>
+      </div>
+
+      {event && (
+        <div className={cn(
+          "p-3 rounded-xl text-xs font-bold text-center border transition-all",
+          gameState === 'won' ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400" : "bg-rose-500/20 border-rose-500/50 text-rose-400 animate-pulse"
+        )}>
+          {event}
+        </div>
+      )}
+
+      <div className="space-y-4">
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs font-bold text-slate-400">
+            <span>Temperature: {temp}K</span>
+            <span className="text-rose-400">Danger: &gt;550K</span>
+          </div>
+          <input 
+            type="range" min="300" max="600" step="10" 
+            value={temp} 
+            onChange={e => setTemp(parseInt(e.target.value))}
+            disabled={gameState !== 'playing'}
+            className="w-full accent-rose-500"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs font-bold text-slate-400">
+            <span>Pressure: {pressure} atm</span>
+            <span className="text-amber-400">Danger: &gt;5 atm</span>
+          </div>
+          <input 
+            type="range" min="1" max="6" step="0.5" 
+            value={pressure} 
+            onChange={e => setPressure(parseFloat(e.target.value))}
+            disabled={gameState !== 'playing'}
+            className="w-full accent-amber-500"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <button 
+          onClick={() => setCatalystHealth(100)}
+          disabled={gameState !== 'playing' || catalystHealth > 50}
+          className="py-3 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold rounded-xl transition-all active:scale-95"
+        >
+          Swap Catalyst
+        </button>
+        {gameState !== 'playing' && (
+          <button 
+            onClick={startGame}
+            className="py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all active:scale-95"
+          >
+            {gameState === 'idle' ? 'Start Rush' : 'Try Again'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
@@ -420,6 +902,7 @@ export default function App() {
     const saved = localStorage.getItem('quiz_time_remaining');
     return saved ? JSON.parse(saved) : null;
   });
+  const [showReview, setShowReview] = useState<boolean>(false);
 
   const activeQuiz = activeQuizId === 'IIT_JAM_QUIZ' ? IIT_JAM_QUIZ : SAMPLE_QUIZ;
 
@@ -459,7 +942,6 @@ export default function App() {
       interval = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev !== null && prev <= 1) {
-            setQuizFinished(true);
             return 0;
           }
           return prev !== null ? prev - 1 : null;
@@ -469,9 +951,16 @@ export default function App() {
     return () => clearInterval(interval);
   }, [quizStarted, quizFinished, isTimedMode, timeRemaining]);
 
+  useEffect(() => {
+    if (quizStarted && !quizFinished && isTimedMode && timeRemaining === 0) {
+      setQuizFinished(true);
+    }
+  }, [timeRemaining, quizStarted, quizFinished, isTimedMode]);
+
   const startQuiz = (quizId: 'SAMPLE_QUIZ' | 'IIT_JAM_QUIZ', isResume: boolean = false) => {
     setActiveQuizId(quizId);
     setQuizStarted(true);
+    setShowReview(false);
     if (!isResume) {
       setQuizProgress(prev => ({...prev, [quizId]: { index: 0, answers: [] }}));
       if (isTimedMode) {
@@ -938,7 +1427,7 @@ export default function App() {
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-[10px] font-bold text-emerald-600 hover:text-emerald-700 shrink-0"
                           >
-                            <span className="hidden sm:inline">{selectedResource.type === 'Repository' ? 'Visit Repository' : 'Open in New Tab'}</span> <ExternalLink size={14} />
+                            <span className="hidden sm:inline">{selectedResource.type === 'Repository' ? selectedResource.title : 'Open in New Tab'}</span> <ExternalLink size={14} />
                           </a>
                         </div>
                         {selectedResource.type === 'Repository' ? (
@@ -956,7 +1445,7 @@ export default function App() {
                               rel="noopener noreferrer"
                               className="px-6 py-2.5 bg-emerald-600 text-white rounded-full font-bold text-sm shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all"
                             >
-                              Go to Repository
+                              {selectedResource.title}
                             </a>
                           </div>
                         ) : (
@@ -1131,59 +1620,78 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="w-full max-w-2xl space-y-4">
-                      <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest px-2">Detailed Review</h3>
-                      {activeQuiz.map((q, idx) => (
-                        <div key={q.id} className={cn(
-                          "bg-white p-6 rounded-3xl border-2 transition-all shadow-sm",
-                          userAnswers[idx] === q.correctAnswer ? "border-emerald-100" : "border-rose-100"
-                        )}>
-                          <div className="flex items-start gap-4">
-                            <div className={cn(
-                              "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1",
-                              userAnswers[idx] === q.correctAnswer ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"
+                    {!showReview ? (
+                      <div className="flex gap-4 mt-8">
+                        <button 
+                          onClick={() => setShowReview(true)}
+                          className="px-8 py-4 bg-emerald-600 text-white rounded-full font-bold shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95"
+                        >
+                          Review Questions
+                        </button>
+                        <button 
+                          onClick={() => { setQuizFinished(false); setQuizStarted(false); setCurrentQuestionIndex(0); setUserAnswers([]); setShowReview(false); }}
+                          className="px-8 py-4 bg-slate-100 text-slate-600 rounded-full font-bold hover:bg-slate-200 transition-all active:scale-95"
+                        >
+                          Return to Test Center
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-full max-w-2xl space-y-4 mt-8">
+                          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest px-2">Detailed Review</h3>
+                          {activeQuiz.map((q, idx) => (
+                            <div key={q.id} className={cn(
+                              "bg-white p-6 rounded-3xl border-2 transition-all shadow-sm",
+                              userAnswers[idx] === q.correctAnswer ? "border-emerald-100" : "border-rose-100"
                             )}>
-                              {userAnswers[idx] === q.correctAnswer ? <CheckCircle2 size={18} /> : <X size={18} />}
-                            </div>
-                            <div className="space-y-4 flex-1">
-                              <p className="font-bold text-slate-800 leading-snug">{q.text}</p>
-                              
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div className="flex items-start gap-4">
                                 <div className={cn(
-                                  "p-3 rounded-xl text-xs",
-                                  userAnswers[idx] === q.correctAnswer ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-rose-50 text-rose-700 border border-rose-100"
+                                  "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1",
+                                  userAnswers[idx] === q.correctAnswer ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"
                                 )}>
-                                  <span className="font-bold block mb-1 uppercase tracking-tighter opacity-60">Your Answer</span>
-                                  {q.options[userAnswers[idx]]}
+                                  {userAnswers[idx] === q.correctAnswer ? <CheckCircle2 size={18} /> : <X size={18} />}
                                 </div>
-                                {userAnswers[idx] !== q.correctAnswer && (
-                                  <div className="p-3 rounded-xl text-xs bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                    <span className="font-bold block mb-1 uppercase tracking-tighter opacity-60">Correct Answer</span>
-                                    {q.options[q.correctAnswer]}
+                                <div className="space-y-4 flex-1">
+                                  <p className="font-bold text-slate-800 leading-snug">{q.text}</p>
+                                  
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className={cn(
+                                      "p-3 rounded-xl text-xs",
+                                      userAnswers[idx] === q.correctAnswer ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-rose-50 text-rose-700 border border-rose-100"
+                                    )}>
+                                      <span className="font-bold block mb-1 uppercase tracking-tighter opacity-60">Your Answer</span>
+                                      {q.options[userAnswers[idx]]}
+                                    </div>
+                                    {userAnswers[idx] !== q.correctAnswer && (
+                                      <div className="p-3 rounded-xl text-xs bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                        <span className="font-bold block mb-1 uppercase tracking-tighter opacity-60">Correct Answer</span>
+                                        {q.options[q.correctAnswer]}
+                                      </div>
+                                    )}
                                   </div>
-                                )}
-                              </div>
 
-                              {q.explanation && (
-                                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                  <p className="text-xs text-slate-500 italic leading-relaxed">
-                                    <span className="font-bold text-slate-700 not-italic mr-1">Explanation:</span>
-                                    {q.explanation}
-                                  </p>
+                                  {q.explanation && (
+                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                      <p className="text-xs text-slate-500 italic leading-relaxed">
+                                        <span className="font-bold text-slate-700 not-italic mr-1">Explanation:</span>
+                                        {q.explanation}
+                                      </p>
+                                    </div>
+                                  )}
                                 </div>
-                              )}
+                              </div>
                             </div>
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
 
-                    <button 
-                      onClick={() => { setQuizFinished(false); setQuizStarted(false); setCurrentQuestionIndex(0); setUserAnswers([]); }}
-                      className="px-12 py-4 bg-slate-900 text-white rounded-full font-bold shadow-xl shadow-slate-200 hover:bg-black transition-all active:scale-95"
-                    >
-                      Return to Test Center
-                    </button>
+                        <button 
+                          onClick={() => { setQuizFinished(false); setQuizStarted(false); setCurrentQuestionIndex(0); setUserAnswers([]); setShowReview(false); }}
+                          className="mt-8 px-12 py-4 bg-slate-900 text-white rounded-full font-bold shadow-xl shadow-slate-200 hover:bg-black transition-all active:scale-95"
+                        >
+                          Return to Test Center
+                        </button>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <div className="flex-1 flex flex-col py-8 overflow-hidden relative">
