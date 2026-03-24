@@ -3,11 +3,144 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+    <title>compitative-exams-B.Sc</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #10b981;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+        color: var(--text);
+      }
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 24px 16px 48px;
+      }
+      .card {
+        background: rgba(17, 24, 39, 0.8);
+        border: 1px solid #1e293b;
+        border-radius: 16px;
+        padding: 18px;
+      }
+      h1 { margin: 0 0 6px; font-size: 1.8rem; }
+      p { margin: 0; color: var(--muted); }
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .repo-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #34d399;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .repo-link:hover { text-decoration: underline; }
+      .grid {
+        margin-top: 18px;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      }
+      .resource {
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 12px;
+        background: #0b1222;
+      }
+      .resource h3 { margin: 0 0 8px; font-size: 0.95rem; }
+      .resource a {
+        color: #93c5fd;
+        font-size: 0.88rem;
+      }
+      .empty {
+        margin-top: 16px;
+        font-size: 0.95rem;
+        color: #fbbf24;
+      }
+      @media (max-width: 640px) { h1 { font-size: 1.4rem; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <main class="container">
+      <section class="card">
+        <div class="topbar">
+          <div>
+            <h1>B.Sc Chemistry Exam Companion</h1>
+            <p>Static HTML fallback (no React runtime) to avoid blank white screen issues.</p>
+          </div>
+          <a
+            id="shareLink"
+            class="repo-link"
+            href="https://github.com/via-decide/decide.engine-tools"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            compitative-exams-B.Sc
+          </a>
+        </div>
+
+        <div id="resourceGrid" class="grid"></div>
+        <div id="emptyState" class="empty" hidden>No resources found.</div>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        'use strict';
+
+        const resources = [
+          { title: 'GATE 2025 Chemistry Paper', url: 'https://gate2026.iitg.ac.in/doc/download/2025/CY2025.pdf' },
+          { title: 'GATE 2025 Answer Key', url: 'https://gate2026.iitg.ac.in/doc/download/2025_Key/CY_Keys.pdf' },
+          { title: 'IIT JAM 2025 Chemistry Paper', url: 'https://jam2026.iitb.ac.in/files/CY2025.pdf' },
+          { title: 'GATE Repository', url: 'https://gate2025.iitr.ac.in/download.html' }
+        ];
+
+        const grid = document.getElementById('resourceGrid');
+        const empty = document.getElementById('emptyState');
+
+        if (!grid || !empty) return;
+
+        if (resources.length === 0) {
+          empty.hidden = false;
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        resources.forEach((item) => {
+          const card = document.createElement('article');
+          card.className = 'resource';
+
+          const title = document.createElement('h3');
+          title.textContent = item.title;
+
+          const link = document.createElement('a');
+          link.href = item.url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = 'Open resource';
+
+          card.appendChild(title);
+          card.appendChild(link);
+          fragment.appendChild(card);
+        });
+
+        grid.appendChild(fragment);
+      })();
+    </script>
   </body>
 </html>
-
