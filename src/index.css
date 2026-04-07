@@ -9,6 +9,16 @@ body {
   @apply antialiased;
 }
 
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
