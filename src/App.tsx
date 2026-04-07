@@ -1094,7 +1094,7 @@ export default function App() {
                 animate={{ opacity: isSidebarOpen ? 1 : 0 }}
                 className="font-bold text-xl tracking-tight text-slate-800 whitespace-nowrap"
               >
-                StudyOS
+                Exam Portal
               </motion.span>
             )}
           </div>
