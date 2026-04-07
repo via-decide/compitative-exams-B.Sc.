@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BSc Competitive Exams</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <div id="app">
+      <h1>B.Sc Competitive Exams Study Portal</h1>
+
+      <div class="menu">
+        <button onclick="openSection('physics')">Physics</button>
+        <button onclick="openSection('chemistry')">Chemistry</button>
+        <button onclick="openSection('math')">Mathematics</button>
+        <button onclick="openSection('notes')">Notes</button>
+      </div>
+
+      <div id="content"></div>
+    </div>
+    <script src="./app.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BSc Competitive Exams</title>
